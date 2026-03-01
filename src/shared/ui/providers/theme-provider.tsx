@@ -65,17 +65,19 @@ function applyPalette(paletteId: string, mode: ThemeMode) {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [mode, setModeState] = useState<ThemeMode>(() => {
-    if (typeof window === "undefined") return "light"
-    const stored = localStorage.getItem("theme-mode")
-    if (stored === "dark" || stored === "light") return stored
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-  })
+  const [mode, setModeState] = useState<ThemeMode>("light")
+  const [paletteId, setPaletteIdState] = useState<string>(DEFAULT_PALETTE_ID)
 
-  const [paletteId, setPaletteIdState] = useState<string>(() => {
-    if (typeof window === "undefined") return DEFAULT_PALETTE_ID
-    return localStorage.getItem("theme-palette") ?? DEFAULT_PALETTE_ID
-  })
+  useEffect(() => {
+    const stored = localStorage.getItem("theme-mode")
+    if (stored === "dark" || stored === "light") {
+      setModeState(stored)
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setModeState("dark")
+    }
+    const storedPalette = localStorage.getItem("theme-palette")
+    if (storedPalette) setPaletteIdState(storedPalette)
+  }, [])
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", mode === "dark")

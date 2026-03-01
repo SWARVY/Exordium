@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useEffect, useState } from "react"
 
 export type Locale = "ko" | "en" | "ja"
 
@@ -21,12 +21,12 @@ interface LocaleProviderProps {
 }
 
 export function LocaleProvider({ children }: LocaleProviderProps) {
-  const [locale, setLocaleState] = useState<Locale>(() => {
-    if (typeof window === "undefined") return "ko"
+  const [locale, setLocaleState] = useState<Locale>("ko")
+
+  useEffect(() => {
     const stored = localStorage.getItem("locale")
-    if (stored === "ko" || stored === "en" || stored === "ja") return stored
-    return "ko"
-  })
+    if (stored === "ko" || stored === "en" || stored === "ja") setLocaleState(stored)
+  }, [])
 
   const setLocale = (l: Locale) => {
     setLocaleState(l)
