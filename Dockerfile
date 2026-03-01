@@ -19,9 +19,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# TanStack Start (Nitro node-server preset) outputs to .output/
-COPY --from=builder /app/.output ./.output
+# Copy build output and runtime dependencies
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
 EXPOSE 3000
 
-CMD ["bun", ".output/server/index.mjs"]
+CMD ["bun", "run", "start"]

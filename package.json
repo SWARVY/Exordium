@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "vite build",
+    "start": "srvx serve --prod --entry dist/server/server.js --static dist/client --port ${PORT:-3000}",
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "oxlint --import-plugin --react-plugin --react-perf-plugin --jsx-a11y-plugin --vitest-plugin --promise-plugin src",
