@@ -1,0 +1,90 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "react",
+    "react-perf",
+    "jsx-a11y",
+    "import",
+    "vitest",
+    "promise",
+    "unicorn"
+  ],
+  "env": {
+    "browser": true,
+    "es2022": true
+  },
+  "settings": {
+    "react": {
+      "version": "19"
+    }
+  },
+  "rules": {
+    // ── correctness (default on) ──────────────────────────────────────
+    "no-unused-vars": "off", // TypeScript handles this (noUnusedLocals)
+    "no-undef": "off", // TypeScript handles this
+
+    // ── react ─────────────────────────────────────────────────────────
+    "react/jsx-key": "error",
+    "react/no-array-index-key": "warn",
+    "react/no-danger": "warn",
+    "react/no-direct-mutation-state": "error",
+    "react/self-closing-comp": "warn",
+    "react/jsx-no-useless-fragment": "warn",
+
+    // ── react-perf ────────────────────────────────────────────────────
+    "react-perf/jsx-no-new-object-as-prop": "warn",
+    "react-perf/jsx-no-new-array-as-prop": "warn",
+    "react-perf/jsx-no-new-function-as-prop": "warn",
+
+    // ── jsx-a11y ──────────────────────────────────────────────────────
+    "jsx-a11y/alt-text": "error",
+    "jsx-a11y/anchor-has-content": "error",
+    "jsx-a11y/click-events-have-key-events": "warn",
+    "jsx-a11y/interactive-supports-focus": "warn",
+    "jsx-a11y/no-autofocus": "warn",
+
+    // ── import ────────────────────────────────────────────────────────
+    "import/no-duplicates": "error",
+    "import/no-self-import": "error",
+    "import/no-cycle": "warn",
+
+    // ── promise ───────────────────────────────────────────────────────
+    "promise/no-return-wrap": "error",
+    "promise/param-names": "error",
+    "promise/no-new-statics": "error",
+
+    // ── unicorn ───────────────────────────────────────────────────────
+    "unicorn/prefer-node-protocol": "off", // browser project
+    "unicorn/filename-case": "off", // handled by FSD conventions
+    "unicorn/no-null": "off", // null is intentional in this project
+    "unicorn/prevent-abbreviations": "off", // too strict
+    "unicorn/no-array-reduce": "off",
+    "unicorn/prefer-query-selector": "warn",
+    "unicorn/prefer-dom-node-remove": "warn",
+    "unicorn/no-useless-undefined": "warn"
+  },
+  "overrides": [
+    {
+      // test files — relax some rules
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
+      "rules": {
+        "react-perf/jsx-no-new-object-as-prop": "off",
+        "react-perf/jsx-no-new-array-as-prop": "off",
+        "react-perf/jsx-no-new-function-as-prop": "off"
+      }
+    },
+    {
+      // generated files — skip linting entirely
+      "files": ["src/routeTree.gen.ts"],
+      "rules": {
+        "no-unused-vars": "off"
+      }
+    }
+  ],
+  "ignorePatterns": [
+    "node_modules",
+    "dist",
+    ".output",
+    "public"
+  ]
+}

@@ -1,0 +1,269 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@jikjo/ui-kit/styles.css";
+@import "@jikjo/image/styles.css";
+
+@custom-variant dark (&:is(.dark, .dark *));
+
+html {
+  font-size: 15px;
+}
+
+body {
+  @apply m-0;
+  font-family:
+    "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code,
+pre {
+  font-family:
+    "Geist Mono", "JetBrains Mono", "Fira Code", Menlo, Monaco, Consolas,
+    "Courier New", monospace;
+}
+
+@theme inline {
+  --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", "Fira Code", Menlo, Monaco, Consolas, "Courier New", monospace;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-surface: var(--surface);
+}
+
+/* ─── Light: duotone cream + primary ─── */
+:root {
+  --radius: 0.375rem;
+
+  --background: #f8f7f4;
+  --foreground: #0f0f0f;
+  --card: #ffffff;
+  --card-foreground: #0f0f0f;
+  --popover: #ffffff;
+  --popover-foreground: #0f0f0f;
+
+  /* Primary: cobalt blue — overridden dynamically by ThemeProvider */
+  --primary: oklch(0.45 0.22 255);
+  --primary-foreground: #ffffff;
+
+  --secondary: #f0ede8;
+  --secondary-foreground: #0f0f0f;
+  --muted: #ede9e3;
+  --muted-foreground: #706b65;
+  --accent: #f0ede8;
+  --accent-foreground: #0f0f0f;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #dedad3;
+  --input: #dedad3;
+  --ring: oklch(0.45 0.22 255);
+
+  --surface: #fdfcf9;
+  --grid-line: rgba(0, 0, 0, 0.055);
+
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+}
+
+/* ─── Dark mode ─── */
+.dark {
+  --background: #0d0d0d;
+  --foreground: #f2f0ec;
+  --card: #161616;
+  --card-foreground: #f2f0ec;
+  --popover: #1c1c1c;
+  --popover-foreground: #f2f0ec;
+
+  --primary: oklch(0.65 0.2 255);
+  --primary-foreground: #0d0d0d;
+
+  --secondary: #1e1e1e;
+  --secondary-foreground: #f2f0ec;
+  --muted: #1e1e1e;
+  --muted-foreground: #8a8580;
+  --accent: #222222;
+  --accent-foreground: #f2f0ec;
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: oklch(0.65 0.2 255);
+
+  --surface: #111111;
+  --grid-line: rgba(255, 255, 255, 0.035);
+
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    background-color: var(--primary);
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* 버튼·링크·네비게이션 등 인터랙티브 요소는 텍스트 선택 방지 */
+  button,
+  a,
+  nav,
+  label,
+  [role="tab"],
+  [role="button"] {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
+
+/* ─── Grid paper background ─── */
+.grid-paper {
+  background-color: var(--background);
+  background-image: linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* ─── Chamfered corner clip ─── */
+.clip-chamfer {
+  clip-path: polygon(28px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 28px);
+}
+
+/* ─── Duotone image overlay (primary color tint) ─── */
+.duotone-wrap {
+  position: relative;
+  isolation: isolate;
+}
+.duotone-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--primary);
+  mix-blend-mode: color;
+  opacity: 0.3;
+  clip-path: polygon(28px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 28px);
+  pointer-events: none;
+}
+
+/* ─── Display heading ─── */
+.text-display {
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+}
+
+/* ─── jikjo Editor: global CSS variable overrides ─── */
+:root {
+  /* Active 버튼(B/I/H1 등) 배경 — 기본값 #ffffff26은 라이트 테마에서 어두워 보임 */
+  --jikjo-btn-bg-active: var(--primary);
+  --jikjo-btn-text-active: var(--primary-foreground);
+  /* 툴바 구분선 */
+  --jikjo-toolbar-border: var(--border);
+  /* 버튼 텍스트 */
+  --jikjo-btn-text: var(--muted-foreground);
+  --jikjo-btn-bg-hover: var(--accent);
+  --jikjo-btn-text-hover: var(--foreground);
+  /* 버블 / 슬래시 메뉴 */
+  --jikjo-menu-bg: var(--popover);
+  --jikjo-menu-shadow: rgba(0, 0, 0, 0.1);
+  --jikjo-menu-divider: var(--border);
+  --jikjo-menu-item-text: var(--muted-foreground);
+  --jikjo-menu-item-text-active: var(--foreground);
+  --jikjo-menu-item-bg-active: var(--accent);
+  --jikjo-accent: var(--primary);
+
+  /* ─── @jikjo/image: 이미지 업로드 다이얼로그 ─── */
+  --jikjo-dialog-bg: var(--card);
+  --jikjo-dialog-border: var(--border);
+  --jikjo-dialog-shadow: rgba(0, 0, 0, 0.12);
+  --jikjo-dialog-text: var(--foreground);
+  --jikjo-dialog-overlay-bg: rgba(0, 0, 0, 0.5);
+  /* 드롭존 */
+  --jikjo-dropzone-border: var(--border);
+  --jikjo-dropzone-border-hover: var(--muted-foreground);
+  --jikjo-dropzone-border-active: var(--primary);
+  --jikjo-dropzone-bg-hover: var(--accent);
+  --jikjo-dropzone-bg-active: color-mix(in srgb, var(--primary) 8%, transparent);
+  /* 파일 아이콘 */
+  --jikjo-file-icon-color: var(--muted-foreground);
+  --jikjo-file-icon-color-active: var(--primary);
+  /* 에러 */
+  --jikjo-error-color: var(--destructive);
+  /* 프리뷰 박스 */
+  --jikjo-preview-bg: var(--muted);
+  --jikjo-preview-border: var(--border);
+  --jikjo-preview-overlay-bg: color-mix(in srgb, var(--background) 70%, transparent);
+  /* 이미지 선택 아웃라인 */
+  --jikjo-image-outline: var(--primary);
+  --jikjo-image-caption-color: var(--muted-foreground);
+  /* 이미지 정렬 툴바 */
+  --jikjo-align-bg: var(--popover);
+  --jikjo-align-border: var(--border);
+  --jikjo-align-shadow: rgba(0, 0, 0, 0.08);
+  --jikjo-align-btn-text: var(--muted-foreground);
+  --jikjo-align-btn-text-active: var(--primary-foreground);
+  --jikjo-align-btn-bg-active: var(--primary);
+  /* 리사이즈 핸들 */
+  --jikjo-resize-handle-bg: var(--card);
+  --jikjo-resize-handle-border: var(--border);
+  --jikjo-resize-handle-shadow: rgba(0, 0, 0, 0.1);
+  /* 업로드 배지 accent */
+  --jikjo-accent-text: var(--primary);
+}
+
+/* 툴바 배경 — .jikjo-toolbar에 background가 없으므로 직접 지정 */
+.jikjo-toolbar {
+  background-color: var(--card);
+  border-bottom-color: var(--border) !important;
+}
+
+/* bubble menu: match popover bg + border */
+.jikjo-bubble-menu {
+  background: var(--popover) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--border) !important;
+  border-radius: 6px !important;
+}
+
+/* slash/block menu panel */
+.jikjo-menu-panel {
+  background: var(--popover) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--border) !important;
+  border-radius: 6px !important;
+}
