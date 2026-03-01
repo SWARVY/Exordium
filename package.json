@@ -45,7 +45,6 @@
     "@tanstack/valibot-form-adapter": "^0.42.1",
     "lucide-react": "^0.575.0",
     "motion": "^12.34.3",
-    "radix-ui": "^1.4.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwind-variants": "^3.2.2",
