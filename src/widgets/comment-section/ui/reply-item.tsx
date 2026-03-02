@@ -4,7 +4,7 @@ import { useDeleteComment } from "@features/delete-comment"
 import { useToggleCommentReaction } from "@features/toggle-reaction"
 import { useT } from "@shared/i18n"
 import { formatShortDate } from "@shared/lib/utils"
-import { ReactionBar } from "@shared/ui/components/reaction-bar"
+import { ReactionPopover } from "@shared/ui/components/reaction-popover"
 import { AuthContext } from "@shared/ui/providers/auth-provider"
 import { useQuery } from "@tanstack/react-query"
 import { useContext } from "react"
@@ -46,7 +46,7 @@ export function ReplyItem({ reply, postId }: ReplyItemProps) {
         <p className="text-sm leading-relaxed text-foreground">{reply.content}</p>
 
         {reactionSummary && (
-          <ReactionBar
+          <ReactionPopover
             summary={reactionSummary}
             onToggle={
               userId
