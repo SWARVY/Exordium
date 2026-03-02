@@ -41,10 +41,14 @@ export const ja: Translations = {
     loginRequired: "コメントするにはログインが必要です。",
     noCommentsYet: "// no comments yet",
     addEmoji: "絵文字を追加",
+    emojiSearch: "検索...",
+    emojiLoading: "読み込み中...",
+    emojiEmpty: "絵文字が見つかりません",
   },
   reaction: {
     label: "リアクション",
     loginRequired: "ログイン後にリアクションできます",
+    addReaction: "リアクションを追加",
   },
   post: {
     noPostsYet: "// no posts yet",
@@ -127,6 +131,18 @@ export const ja: Translations = {
   },
   asyncBoundary: {
     errorMessage: "データの読み込みに失敗しました。",
+  },
+  toast: {
+    commentPosted: "コメントを投稿しました。",
+    commentDeleted: "コメントを削除しました。",
+    postPublished: "投稿を公開しました。",
+    postUpdated: "投稿を更新しました。",
+    postDeleted: "投稿を削除しました。",
+    profileSaved: "プロフィールを保存しました。",
+    projectAdded: "プロジェクトを追加しました。",
+    projectUpdated: "プロジェクトを更新しました。",
+    projectDeleted: "プロジェクトを削除しました。",
+    error: "エラーが発生しました。もう一度お試しください。",
   },
   search: {
     placeholder: "投稿、プロジェクトを検索...",

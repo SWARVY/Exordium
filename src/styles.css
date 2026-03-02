@@ -308,3 +308,19 @@ pre {
 [frimousse-emoji][data-active] {
   background-color: var(--accent);
 }
+
+/* ─── Reaction count pop animation ─── */
+@keyframes reaction-count-pop {
+  from {
+    transform: translateY(4px) scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-count-pop {
+  animation: reaction-count-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}

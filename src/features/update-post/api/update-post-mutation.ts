@@ -1,6 +1,8 @@
 import { postKeys } from "@entities/post/api/post-keys"
+import { useT } from "@shared/i18n"
 import { supabase } from "@shared/api/supabase-client"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 
 import type { PostDraft } from "@entities/post"
 
@@ -25,11 +27,16 @@ async function updatePost({ id, draft }: { id: string; draft: PostDraft }) {
 
 export function useUpdatePost() {
   const queryClient = useQueryClient()
+  const t = useT()
   return useMutation({
     mutationFn: updatePost,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: postKeys.lists() })
       queryClient.invalidateQueries({ queryKey: postKeys.detail(data.slug) })
+      toast.success(t.toast.postUpdated)
+    },
+    onError: () => {
+      toast.error(t.toast.error)
     },
   })
 }

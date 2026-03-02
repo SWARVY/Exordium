@@ -109,16 +109,16 @@ export function CommentForm({
                         >
                           <div className="border-b border-border px-2 py-2">
                             <EmojiPicker.Search
-                              placeholder="검색..."
+                              placeholder={t.comment.emojiSearch}
                               className="w-full bg-transparent font-mono text-xs text-foreground outline-none placeholder:text-muted-foreground/40"
                             />
                           </div>
                           <EmojiPicker.Viewport className="h-60">
                             <EmojiPicker.Loading className="flex h-full items-center justify-center font-mono text-xs text-muted-foreground">
-                              로딩 중…
+                              {t.comment.emojiLoading}
                             </EmojiPicker.Loading>
                             <EmojiPicker.Empty className="flex h-full items-center justify-center font-mono text-xs text-muted-foreground">
-                              이모지를 찾을 수 없어요
+                              {t.comment.emojiEmpty}
                             </EmojiPicker.Empty>
                             <EmojiPicker.List />
                           </EmojiPicker.Viewport>

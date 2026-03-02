@@ -41,10 +41,14 @@ export const en: Translations = {
     loginRequired: "Sign in to leave a comment.",
     noCommentsYet: "// no comments yet",
     addEmoji: "Add emoji",
+    emojiSearch: "Search...",
+    emojiLoading: "Loading...",
+    emojiEmpty: "No emoji found",
   },
   reaction: {
     label: "Reactions",
     loginRequired: "Sign in to react",
+    addReaction: "Add reaction",
   },
   post: {
     noPostsYet: "// no posts yet",
@@ -127,6 +131,18 @@ export const en: Translations = {
   },
   asyncBoundary: {
     errorMessage: "Failed to load data.",
+  },
+  toast: {
+    commentPosted: "Comment posted.",
+    commentDeleted: "Comment deleted.",
+    postPublished: "Post published.",
+    postUpdated: "Post updated.",
+    postDeleted: "Post deleted.",
+    profileSaved: "Profile saved.",
+    projectAdded: "Project added.",
+    projectUpdated: "Project updated.",
+    projectDeleted: "Project deleted.",
+    error: "Something went wrong. Please try again.",
   },
   search: {
     placeholder: "Search posts, projects...",

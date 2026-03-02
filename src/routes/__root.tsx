@@ -4,7 +4,8 @@ import { getThemeInitScript } from "@shared/lib/theme-init-script"
 import { ErrorPage } from "@shared/ui/components/error-page/error-page"
 import { NotFoundPage } from "@shared/ui/components/error-page/not-found-page"
 import { AuthProvider } from "@shared/ui/providers/auth-provider"
-import { ThemeProvider } from "@shared/ui/providers/theme-provider"
+import { ThemeProvider, useThemeContext } from "@shared/ui/providers/theme-provider"
+import { Toaster } from "sonner"
 import { TanStackDevtools } from "@tanstack/react-devtools"
 import { type QueryClient } from "@tanstack/react-query"
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools"
@@ -51,6 +52,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   component: RootLayout,
 })
 
+function SonnerToaster() {
+  const { mode } = useThemeContext()
+  return (
+    <Toaster
+      theme={mode}
+      position="bottom-right"
+      toastOptions={{
+        classNames: {
+          toast:
+            "font-mono text-sm border border-border bg-card text-foreground shadow-lg rounded-sm",
+          title: "font-medium",
+          description: "text-xs text-muted-foreground",
+          actionButton: "bg-primary text-primary-foreground",
+          success: "border-border",
+          error: "border-destructive/40",
+        },
+      }}
+    />
+  )
+}
+
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko" suppressHydrationWarning>
@@ -74,6 +96,7 @@ function RootLayout() {
     <AuthProvider>
       <LocaleProvider>
         <ThemeProvider>
+          <SonnerToaster />
           <div className="flex min-h-screen flex-col bg-background text-foreground">
             <Header />
             <main className="flex-1">

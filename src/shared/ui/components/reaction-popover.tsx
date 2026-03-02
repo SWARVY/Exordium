@@ -1,4 +1,5 @@
 import { REACTION_EMOJIS } from "@entities/reaction"
+import { useT } from "@shared/i18n"
 import { cn } from "@shared/lib/utils"
 import { SmilePlusIcon } from "lucide-react"
 import { useRef, useState } from "react"
@@ -18,6 +19,7 @@ export function ReactionPopover({
   disabled,
   size = "sm",
 }: ReactionPopoverProps) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -64,8 +66,9 @@ export function ReactionPopover({
           >
             <span className="text-sm leading-none">{emoji}</span>
             <span
+              key={count}
               className={cn(
-                "font-mono leading-none tabular-nums text-[10px]",
+                "animate-count-pop font-mono leading-none tabular-nums text-[10px]",
                 reacted ? "text-primary" : "text-muted-foreground",
               )}
             >
@@ -86,7 +89,7 @@ export function ReactionPopover({
             open && "border-primary/40 bg-primary/5 text-primary",
             size === "sm" ? "size-6" : "size-7",
           )}
-          aria-label="반응 추가"
+          aria-label={t.reaction.addReaction}
           aria-expanded={open}
         >
           <SmilePlusIcon className="size-3" />
@@ -125,7 +128,10 @@ export function ReactionPopover({
                 >
                   <span className="text-lg leading-none">{emoji}</span>
                   {count > 0 && (
-                    <span className="font-mono text-[9px] tabular-nums text-muted-foreground">
+                    <span
+                      key={count}
+                      className="animate-count-pop font-mono text-[9px] tabular-nums text-muted-foreground"
+                    >
                       {count}
                     </span>
                   )}

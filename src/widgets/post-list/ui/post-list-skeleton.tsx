@@ -1,8 +1,10 @@
+import { useT } from "@shared/i18n"
 import { Skeleton } from "@shared/ui/components/skeleton"
 
 export function PostListSkeleton() {
+  const t = useT()
   return (
-    <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2" aria-label="게시글 목록 로딩 중">
+    <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2" aria-label={t.aria.postListLoading}>
       {Array.from({ length: 4 }).map((_, i) => (
         <li key={i} className="flex flex-col gap-4 rounded-sm border border-border bg-card p-6">
           <div className="flex gap-2">

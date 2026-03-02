@@ -39,10 +39,14 @@ export const ko = {
     loginRequired: "댓글을 작성하려면 로그인이 필요합니다.",
     noCommentsYet: "// no comments yet",
     addEmoji: "이모지 추가",
+    emojiSearch: "검색...",
+    emojiLoading: "로딩 중...",
+    emojiEmpty: "이모지를 찾을 수 없어요",
   },
   reaction: {
     label: "Reactions",
     loginRequired: "로그인 후 반응을 남길 수 있습니다",
+    addReaction: "반응 추가",
   },
   post: {
     noPostsYet: "// no posts yet",
@@ -125,6 +129,18 @@ export const ko = {
   },
   asyncBoundary: {
     errorMessage: "데이터를 불러오지 못했습니다.",
+  },
+  toast: {
+    commentPosted: "댓글이 등록되었습니다.",
+    commentDeleted: "댓글이 삭제되었습니다.",
+    postPublished: "게시글이 발행되었습니다.",
+    postUpdated: "게시글이 수정되었습니다.",
+    postDeleted: "게시글이 삭제되었습니다.",
+    profileSaved: "프로필이 저장되었습니다.",
+    projectAdded: "프로젝트가 추가되었습니다.",
+    projectUpdated: "프로젝트가 수정되었습니다.",
+    projectDeleted: "프로젝트가 삭제되었습니다.",
+    error: "오류가 발생했습니다. 다시 시도해주세요.",
   },
   search: {
     placeholder: "게시글, 프로젝트 검색...",

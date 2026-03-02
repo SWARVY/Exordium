@@ -1,8 +1,10 @@
+import { useT } from "@shared/i18n"
 import { Skeleton } from "@shared/ui/components/skeleton"
 
 export function CommentSkeleton() {
+  const t = useT()
   return (
-    <div className="flex flex-col gap-6" aria-label="댓글 로딩 중">
+    <div className="flex flex-col gap-6" aria-label={t.aria.commentLoading}>
       {Array.from({ length: 3 }).map((_, i) => (
         <div key={i} className="flex gap-3">
           <Skeleton className="size-8 shrink-0 rounded-full" />

@@ -1,8 +1,10 @@
+import { useT } from "@shared/i18n"
 import { Skeleton } from "@shared/ui/components/skeleton"
 
 export function PostDetailSkeleton() {
+  const t = useT()
   return (
-    <div aria-label="게시글 로딩 중">
+    <div aria-label={t.aria.postLoading}>
       {/* ── Hero header ── */}
       <div className="grid-paper border-b border-border">
         <div className="mx-auto max-w-3xl px-6 py-12">

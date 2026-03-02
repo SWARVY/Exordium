@@ -1,6 +1,8 @@
 import { ownerKeys } from "@entities/owner/api/owner-keys"
+import { useT } from "@shared/i18n"
 import { supabase } from "@shared/api/supabase-client"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 
 import type { OwnerProfileForm } from "@entities/owner"
 
@@ -33,10 +35,15 @@ async function updateProfile(form: OwnerProfileForm) {
 
 export function useUpdateProfile() {
   const queryClient = useQueryClient()
+  const t = useT()
   return useMutation({
     mutationFn: updateProfile,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ownerKeys.profile() })
+      toast.success(t.toast.profileSaved)
+    },
+    onError: () => {
+      toast.error(t.toast.error)
     },
   })
 }
