@@ -33,7 +33,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setSession(newSession)
     })
 
-    return () => subscription.unsubscribe()
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        supabase.auth.getSession().then(({ data }) => {
+          setSession(data.session)
+        })
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+
+    return () => {
+      subscription.unsubscribe()
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+    }
   }, [])
 
   return <AuthContext.Provider value={{ session, isLoading }}>{children}</AuthContext.Provider>

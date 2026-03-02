@@ -93,13 +93,15 @@ export function CommentItem({ comment, replies, postId }: CommentItemProps) {
       </div>
 
       {replies.length > 0 && (
-        <ul className="flex flex-col border-t border-border">
-          {replies.map((reply) => (
-            <li key={reply.id} className="border-b border-border last:border-b-0">
-              <ReplyItem reply={reply} postId={postId} />
-            </li>
-          ))}
-        </ul>
+        <div className="border-t border-border px-4 py-3">
+          <ul className="flex flex-col gap-2 border-l-2 border-primary/20 pl-4">
+            {replies.map((reply) => (
+              <li key={reply.id}>
+                <ReplyItem reply={reply} postId={postId} />
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {isReplying && (
