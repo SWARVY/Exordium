@@ -1,12 +1,24 @@
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core"
+import {
+  SortableContext,
+  arrayMove,
+  horizontalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 import { OwnerProfileFormSchema, type OwnerProfile } from "@entities/owner"
 import { useUpdateProfile } from "@features/update-profile"
-import { useT } from "@shared/i18n"
 import { supabase } from "@shared/api/supabase-client"
+import { useT } from "@shared/i18n"
 import { Input } from "@shared/ui/components/input"
 import { Label } from "@shared/ui/components/label"
-import { DndContext, DragOverlay, PointerSensor, closestCenter, useSensor, useSensors } from "@dnd-kit/core"
-import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable } from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
 import { useForm } from "@tanstack/react-form"
 import { GripIcon, ImageIcon, PlusIcon, UploadIcon, XIcon } from "lucide-react"
 import { useRef, useState } from "react"
@@ -22,14 +34,20 @@ function SortableSkillTag({
   onRemove: () => void
   removeLabel: string
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: skill })
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: skill,
+  })
 
   return (
     <span
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0 : 1 }}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0 : 1,
+      }}
       className="flex cursor-grab items-center gap-1 rounded-full border border-primary px-2.5 py-0.5 font-mono text-xs text-primary active:cursor-grabbing"
     >
       <GripIcon className="size-2.5 opacity-40" />
@@ -113,7 +131,10 @@ export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProf
 
   const removeSkill = (skill: string) => {
     const current = form.getFieldValue("skills")
-    form.setFieldValue("skills", current.filter((s) => s !== skill))
+    form.setFieldValue(
+      "skills",
+      current.filter((s) => s !== skill),
+    )
   }
 
   const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -164,9 +185,7 @@ export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProf
               <UploadIcon className="size-3" />
               {isUploading ? t.action.uploading : t.action.upload}
             </button>
-            <p className="font-mono text-[10px] text-muted-foreground/60">
-              {t.profile.avatarHint}
-            </p>
+            <p className="font-mono text-[10px] text-muted-foreground/60">{t.profile.avatarHint}</p>
           </div>
           <input
             ref={fileInputRef}
@@ -257,7 +276,12 @@ export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProf
               <SortableContext items={field.state.value} strategy={horizontalListSortingStrategy}>
                 <div className="flex flex-wrap gap-1.5">
                   {field.state.value.map((skill) => (
-                    <SortableSkillTag key={skill} skill={skill} onRemove={() => removeSkill(skill)} removeLabel={t.profile.removeSkill(skill)} />
+                    <SortableSkillTag
+                      key={skill}
+                      skill={skill}
+                      onRemove={() => removeSkill(skill)}
+                      removeLabel={t.profile.removeSkill(skill)}
+                    />
                   ))}
                 </div>
               </SortableContext>

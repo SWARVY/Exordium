@@ -31,14 +31,14 @@ export function PostReactions({ postId }: PostReactionsProps) {
       </div>
       <ReactionBar
         summary={summary}
-        onToggle={userId ? (emoji) => toggle({ emoji, reacted: summary[emoji].reacted }) : undefined}
+        onToggle={
+          userId ? (emoji) => toggle({ emoji, reacted: summary[emoji].reacted }) : undefined
+        }
         disabled={!userId}
         centered
       />
       {!userId && (
-        <p className="font-mono text-[9px] text-muted-foreground/40">
-          {t.reaction.loginRequired}
-        </p>
+        <p className="font-mono text-[9px] text-muted-foreground/40">{t.reaction.loginRequired}</p>
       )}
     </div>
   )

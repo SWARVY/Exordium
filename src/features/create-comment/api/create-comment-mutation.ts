@@ -5,7 +5,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { CreateComment } from "@entities/comment"
 
 async function createComment({ postId, payload }: { postId: string; payload: CreateComment }) {
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) throw new Error("로그인이 필요합니다.")
 
   const authorName =
@@ -14,10 +16,7 @@ async function createComment({ postId, payload }: { postId: string; payload: Cre
     user.email?.split("@")[0] ??
     "Anonymous"
 
-  const authorAvatarUrl =
-    user.user_metadata?.avatar_url ??
-    user.user_metadata?.picture ??
-    null
+  const authorAvatarUrl = user.user_metadata?.avatar_url ?? user.user_metadata?.picture ?? null
 
   const { data, error } = await supabase
     .from("comments")

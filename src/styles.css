@@ -13,7 +13,11 @@ html {
 body {
   @apply m-0;
   font-family:
-    "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    "Geist",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -21,13 +25,13 @@ body {
 code,
 pre {
   font-family:
-    "Geist Mono", "JetBrains Mono", "Fira Code", Menlo, Monaco, Consolas,
-    "Courier New", monospace;
+    "Geist Mono", "JetBrains Mono", "Fira Code", Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
 @theme inline {
   --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: "Geist Mono", "JetBrains Mono", "Fira Code", Menlo, Monaco, Consolas, "Courier New", monospace;
+  --font-mono:
+    "Geist Mono", "JetBrains Mono", "Fira Code", Menlo, Monaco, Consolas, "Courier New", monospace;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -156,7 +160,8 @@ pre {
 /* ─── Grid paper background ─── */
 .grid-paper {
   background-color: var(--background);
-  background-image: linear-gradient(var(--grid-line) 1px, transparent 1px),
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 28px 28px;
 }
@@ -257,13 +262,17 @@ pre {
 /* bubble menu: match popover bg + border */
 .jikjo-bubble-menu {
   background: var(--popover) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--border) !important;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    0 0 0 1px var(--border) !important;
   border-radius: 6px !important;
 }
 
 /* slash/block menu panel */
 .jikjo-menu-panel {
   background: var(--popover) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--border) !important;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.1),
+    0 0 0 1px var(--border) !important;
   border-radius: 6px !important;
 }

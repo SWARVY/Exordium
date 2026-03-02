@@ -30,9 +30,7 @@ export function CommentList({ postId }: CommentListProps) {
       <div className="flex flex-col items-center gap-2 rounded-sm border border-dashed border-border py-10 text-center">
         <span className="text-2xl">💬</span>
         <p className="font-mono text-xs font-medium text-foreground">{t.comment.noCommentsYet}</p>
-        <p className="font-mono text-[10px] text-muted-foreground">
-          {t.comment.empty}
-        </p>
+        <p className="font-mono text-[10px] text-muted-foreground">{t.comment.empty}</p>
       </div>
     )
   }

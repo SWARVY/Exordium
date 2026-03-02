@@ -1,7 +1,7 @@
 import { siteConfigQueryOptions } from "@entities/site-config"
 import { useUpdateSiteConfig } from "@features/update-site-config"
-import { useT } from "@shared/i18n"
 import { useIsOwner } from "@shared/hooks/use-is-owner"
+import { useT } from "@shared/i18n"
 import { useSuspenseQuery } from "@suspensive/react-query-5"
 import { CheckIcon, PencilIcon, XIcon } from "lucide-react"
 import { useRef, useState } from "react"

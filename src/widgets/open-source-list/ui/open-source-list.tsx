@@ -1,8 +1,3 @@
-import { openSourceKeys, openSourceQueryOptions, type OpenSource } from "@entities/open-source"
-import { OpenSourceFormDialog, useReorderOpenSource } from "@features/manage-open-source"
-import { useT } from "@shared/i18n"
-import { useIsOwner } from "@shared/hooks/use-is-owner"
-import { useQueryClient } from "@tanstack/react-query"
 import {
   DndContext,
   DragOverlay,
@@ -12,8 +7,13 @@ import {
   useSensors,
 } from "@dnd-kit/core"
 import { SortableContext, arrayMove, rectSortingStrategy } from "@dnd-kit/sortable"
+import { openSourceKeys, openSourceQueryOptions, type OpenSource } from "@entities/open-source"
+import { OpenSourceFormDialog, useReorderOpenSource } from "@features/manage-open-source"
+import { useIsOwner } from "@shared/hooks/use-is-owner"
+import { useT } from "@shared/i18n"
 import { AsyncBoundary } from "@shared/ui/components/async-boundary"
 import { useSuspenseQuery } from "@suspensive/react-query-5"
+import { useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 
 import { OpenSourceCard, OpenSourceCardContent } from "./open-source-card"
@@ -31,9 +31,7 @@ function OpenSourceListContent() {
 
   const items = [...data].sort((a, b) => a.order - b.order)
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-  )
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
   function handleDragStart(event: DragStartEvent) {
     const found = items.find((i) => i.id === event.active.id)
@@ -74,9 +72,7 @@ function OpenSourceListContent() {
       {items.length === 0 ? (
         <div className="rounded-sm border border-dashed border-border px-8 py-24 text-center">
           <p className="font-mono text-sm font-medium text-foreground">{t.project.noProjectsYet}</p>
-          <p className="mt-2 font-mono text-xs text-muted-foreground">
-            {t.project.noProjectsDesc}
-          </p>
+          <p className="mt-2 font-mono text-xs text-muted-foreground">{t.project.noProjectsDesc}</p>
         </div>
       ) : (
         <DndContext

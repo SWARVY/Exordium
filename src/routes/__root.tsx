@@ -1,33 +1,31 @@
-import { seo } from "@shared/constants/seo";
-import { getThemeInitScript } from "@shared/lib/theme-init-script";
-import { ErrorPage } from "@shared/ui/components/error-page/error-page";
-import { NotFoundPage } from "@shared/ui/components/error-page/not-found-page";
-import { LocaleProvider } from "@shared/i18n";
-import { AuthProvider } from "@shared/ui/providers/auth-provider";
-import { ThemeProvider } from "@shared/ui/providers/theme-provider";
-import { TanStackDevtools } from "@tanstack/react-devtools";
-import { type QueryClient } from "@tanstack/react-query";
-import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
+import { seo } from "@shared/constants/seo"
+import { LocaleProvider } from "@shared/i18n"
+import { getThemeInitScript } from "@shared/lib/theme-init-script"
+import { ErrorPage } from "@shared/ui/components/error-page/error-page"
+import { NotFoundPage } from "@shared/ui/components/error-page/not-found-page"
+import { AuthProvider } from "@shared/ui/providers/auth-provider"
+import { ThemeProvider } from "@shared/ui/providers/theme-provider"
+import { TanStackDevtools } from "@tanstack/react-devtools"
+import { type QueryClient } from "@tanstack/react-query"
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools"
 import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
   Outlet,
   useRouterState,
-} from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { Footer } from "@widgets/footer";
-import { BottomNav, Header, WriteFab } from "@widgets/header";
+} from "@tanstack/react-router"
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
+import { Footer } from "@widgets/footer"
+import { BottomNav, Header, WriteFab } from "@widgets/header"
 
-import appCss from "../styles.css?url";
+import appCss from "../styles.css?url"
 
-const themeInitScript = getThemeInitScript();
+const themeInitScript = getThemeInitScript()
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   notFoundComponent: NotFoundPage,
-  errorComponent: ({ error, reset }) => (
-    <ErrorPage error={error} reset={reset} />
-  ),
+  errorComponent: ({ error, reset }) => <ErrorPage error={error} reset={reset} />,
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -51,7 +49,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   }),
   shellComponent: RootDocument,
   component: RootLayout,
-});
+})
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
@@ -65,12 +63,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <Scripts />
       </body>
     </html>
-  );
+  )
 }
 
 function RootLayout() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const isEditorPage = pathname === "/posts/new" || pathname.endsWith("/edit");
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const isEditorPage = pathname === "/posts/new" || pathname.endsWith("/edit")
 
   return (
     <AuthProvider>
@@ -99,5 +97,5 @@ function RootLayout() {
         </ThemeProvider>
       </LocaleProvider>
     </AuthProvider>
-  );
+  )
 }

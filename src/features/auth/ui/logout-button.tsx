@@ -1,4 +1,5 @@
 import { useT } from "@shared/i18n"
+
 import { useSignOut } from "../model/use-auth"
 
 export function LogoutButton() {

@@ -10,7 +10,9 @@ import { Suspense } from "react"
 
 export const Route = createFileRoute("/posts/$slug/edit")({
   beforeLoad: async () => {
-    const { data: { session } } = await supabase.auth.getSession()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
     const isOwner = session?.user?.app_metadata?.role === "owner"
     if (!isOwner) throw redirect({ to: routes.home, replace: true })
   },

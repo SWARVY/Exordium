@@ -1,7 +1,6 @@
 import { useTheme } from "@features/change-theme"
-import { useLocale, useT } from "@shared/i18n"
-import type { Locale } from "@shared/i18n"
 import { COLOR_PALETTES } from "@shared/constants/themes"
+import { useLocale, useT } from "@shared/i18n"
 import { cn } from "@shared/lib/utils"
 import {
   DropdownMenu,
@@ -11,6 +10,8 @@ import {
   DropdownMenuItem,
 } from "@shared/ui/components/dropdown-menu"
 import { CheckIcon, MoonIcon, SunIcon } from "lucide-react"
+
+import type { Locale } from "@shared/i18n"
 
 const LOCALES: { value: Locale; label: string; flag: string }[] = [
   { value: "ko", label: "한국어", flag: "🇰🇷" },
@@ -59,10 +60,7 @@ export function ThemeSelector() {
             <DropdownMenuItem
               key={palette.id}
               onClick={() => setPaletteId(palette.id)}
-              className={cn(
-                "gap-2.5",
-                paletteId === palette.id && "text-foreground",
-              )}
+              className={cn("gap-2.5", paletteId === palette.id && "text-foreground")}
             >
               <span
                 className="size-3 shrink-0 rounded-full"
@@ -70,9 +68,7 @@ export function ThemeSelector() {
                 aria-hidden="true"
               />
               {palette.name}
-              {paletteId === palette.id && (
-                <CheckIcon className="ml-auto size-3 text-foreground" />
-              )}
+              {paletteId === palette.id && <CheckIcon className="ml-auto size-3 text-foreground" />}
             </DropdownMenuItem>
           ))}
 
@@ -89,16 +85,13 @@ export function ThemeSelector() {
             <DropdownMenuItem
               key={loc.value}
               onClick={() => setLocale(loc.value)}
-              className={cn(
-                "gap-2.5",
-                locale === loc.value && "text-foreground",
-              )}
+              className={cn("gap-2.5", locale === loc.value && "text-foreground")}
             >
-              <span className="text-sm" aria-hidden="true">{loc.flag}</span>
+              <span className="text-sm" aria-hidden="true">
+                {loc.flag}
+              </span>
               {loc.label}
-              {locale === loc.value && (
-                <CheckIcon className="ml-auto size-3 text-foreground" />
-              )}
+              {locale === loc.value && <CheckIcon className="ml-auto size-3 text-foreground" />}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>

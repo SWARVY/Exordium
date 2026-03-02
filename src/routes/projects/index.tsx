@@ -1,11 +1,10 @@
 import { siteConfigQueryOptions } from "@entities/site-config"
 import { buildMeta } from "@shared/constants/seo"
+import { useT } from "@shared/i18n"
 import { AsyncBoundary } from "@shared/ui/components/async-boundary"
-
 import { createFileRoute } from "@tanstack/react-router"
 import { OpenSourceList } from "@widgets/open-source-list"
 import { PageHero } from "@widgets/page-hero"
-import { useT } from "@shared/i18n"
 
 export const Route = createFileRoute("/projects/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(siteConfigQueryOptions.config()),

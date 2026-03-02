@@ -14,7 +14,10 @@ export function CommentSection({ postId }: CommentSectionProps) {
   const t = useT()
 
   return (
-    <section aria-label={t.comment.label} className="mt-12 flex flex-col gap-8 border-t border-border pt-10">
+    <section
+      aria-label={t.comment.label}
+      className="mt-12 flex flex-col gap-8 border-t border-border pt-10"
+    >
       {/* Header */}
       <div className="flex items-center gap-2">
         <span className="font-mono text-xs font-semibold uppercase tracking-widest text-primary">
@@ -28,9 +31,7 @@ export function CommentSection({ postId }: CommentSectionProps) {
       ) : (
         <div className="flex items-center gap-3 rounded-sm border border-dashed border-border px-4 py-3">
           <span className="text-base">🔒</span>
-          <p className="font-mono text-xs text-muted-foreground">
-            {t.comment.loginRequired}
-          </p>
+          <p className="font-mono text-xs text-muted-foreground">{t.comment.loginRequired}</p>
         </div>
       )}
 

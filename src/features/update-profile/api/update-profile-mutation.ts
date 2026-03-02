@@ -23,15 +23,10 @@ async function updateProfile(form: OwnerProfileForm) {
   }
 
   if (existing) {
-    const { error } = await supabase
-      .from("owner_profile")
-      .update(payload)
-      .eq("id", existing.id)
+    const { error } = await supabase.from("owner_profile").update(payload).eq("id", existing.id)
     if (error) throw error
   } else {
-    const { error } = await supabase
-      .from("owner_profile")
-      .insert(payload)
+    const { error } = await supabase.from("owner_profile").insert(payload)
     if (error) throw error
   }
 }

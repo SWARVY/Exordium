@@ -1,5 +1,5 @@
-import { formatDate } from "@shared/lib/utils"
 import { routes } from "@shared/constants/routes"
+import { formatDate } from "@shared/lib/utils"
 import { Link } from "@tanstack/react-router"
 import { ArrowUpRightIcon } from "lucide-react"
 import { motion } from "motion/react"
@@ -54,10 +54,7 @@ export function PostCard({ post, index = 0 }: PostCardProps) {
         {/* Footer */}
         <div className="flex items-center justify-between">
           {publishedDate && (
-            <time
-              dateTime={post.publishedAt!}
-              className="font-mono text-xs text-muted-foreground"
-            >
+            <time dateTime={post.publishedAt!} className="font-mono text-xs text-muted-foreground">
               {publishedDate}
             </time>
           )}

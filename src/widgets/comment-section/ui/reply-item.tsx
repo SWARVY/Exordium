@@ -1,9 +1,9 @@
 import { reactionQueryOptions } from "@entities/reaction"
-import { formatShortDate } from "@shared/lib/utils"
 import { UserAvatar } from "@entities/user"
 import { useDeleteComment } from "@features/delete-comment"
 import { useToggleCommentReaction } from "@features/toggle-reaction"
 import { useT } from "@shared/i18n"
+import { formatShortDate } from "@shared/lib/utils"
 import { ReactionBar } from "@shared/ui/components/reaction-bar"
 import { AuthContext } from "@shared/ui/providers/auth-provider"
 import { useQuery } from "@tanstack/react-query"
@@ -22,9 +22,7 @@ export function ReplyItem({ reply, postId }: ReplyItemProps) {
   const { mutate: deleteComment, isPending } = useDeleteComment(postId)
   const canDelete = userId === reply.authorId
 
-  const { data: reactionSummary } = useQuery(
-    reactionQueryOptions.byComment(reply.id, userId),
-  )
+  const { data: reactionSummary } = useQuery(reactionQueryOptions.byComment(reply.id, userId))
   const { mutate: toggleReaction } = useToggleCommentReaction(reply.id, userId)
   const t = useT()
 

@@ -1,5 +1,5 @@
-import { useAuth } from "@shared/hooks/use-auth"
 import { routes } from "@shared/constants/routes"
+import { useAuth } from "@shared/hooks/use-auth"
 import { Navigate } from "@tanstack/react-router"
 
 import type { ReactNode } from "react"

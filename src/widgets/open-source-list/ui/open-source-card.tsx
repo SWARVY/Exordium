@@ -1,8 +1,8 @@
-import { OpenSourceFormDialog, useDeleteOpenSource } from "@features/manage-open-source"
-import { useT } from "@shared/i18n"
-import { useIsOwner } from "@shared/hooks/use-is-owner"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import { OpenSourceFormDialog, useDeleteOpenSource } from "@features/manage-open-source"
+import { useIsOwner } from "@shared/hooks/use-is-owner"
+import { useT } from "@shared/i18n"
 import { ArrowUpRightIcon, GripVerticalIcon } from "lucide-react"
 
 import type { OpenSource } from "@entities/open-source"
@@ -106,7 +106,10 @@ export function OpenSourceCard({ item, isDndEnabled = false }: OpenSourceCardPro
     <div ref={setNodeRef} style={style}>
       {isDragging ? (
         // 드래그 중인 자리는 ghost outline만 표시
-        <div className="h-full rounded-sm border border-dashed border-border bg-muted/30" style={{ minHeight: 160 }} />
+        <div
+          className="h-full rounded-sm border border-dashed border-border bg-muted/30"
+          style={{ minHeight: 160 }}
+        />
       ) : (
         <OpenSourceCardContent
           item={item}

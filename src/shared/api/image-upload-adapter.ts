@@ -1,6 +1,6 @@
-import type { ImageUploadAdapter } from "@jikjo/image"
-
 import { supabase } from "./supabase-client"
+
+import type { ImageUploadAdapter } from "@jikjo/image"
 
 export const postImageUploadAdapter: ImageUploadAdapter = {
   upload: async (file: File) => {

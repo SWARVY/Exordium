@@ -33,9 +33,5 @@ export function LocaleProvider({ children }: LocaleProviderProps) {
     localStorage.setItem("locale", l)
   }
 
-  return (
-    <LocaleContext.Provider value={{ locale, setLocale }}>
-      {children}
-    </LocaleContext.Provider>
-  )
+  return <LocaleContext.Provider value={{ locale, setLocale }}>{children}</LocaleContext.Provider>
 }

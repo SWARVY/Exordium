@@ -1,5 +1,5 @@
-import { useT } from "@shared/i18n"
 import { routes } from "@shared/constants/routes"
+import { useT } from "@shared/i18n"
 import { Link } from "@tanstack/react-router"
 import { ArrowLeftIcon } from "lucide-react"
 

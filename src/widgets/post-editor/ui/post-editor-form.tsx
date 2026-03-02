@@ -142,7 +142,6 @@ export function PostEditorForm({ post }: PostEditorFormProps) {
       {/* ── Two-column layout ── */}
       <div className="mx-auto w-full max-w-5xl px-6 py-10">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-8">
-
           {/* Left: meta sidebar */}
           <aside className="flex flex-col gap-6 lg:w-64 lg:shrink-0">
             <div className="flex items-center gap-2 border-b border-border pb-3">
@@ -235,19 +234,17 @@ export function PostEditorForm({ post }: PostEditorFormProps) {
                 // Tips
               </p>
               <ul className="flex flex-col gap-2">
-                {[
-                  t.postEditor.tipSlug,
-                  t.postEditor.tipSlashBlock,
-                  t.postEditor.tipFormat,
-                ].map((tip) => (
-                  <li
-                    key={tip}
-                    className="flex items-start gap-1.5 font-mono text-[10px] leading-relaxed text-muted-foreground"
-                  >
-                    <span className="mt-px shrink-0 text-primary">›</span>
-                    {tip}
-                  </li>
-                ))}
+                {[t.postEditor.tipSlug, t.postEditor.tipSlashBlock, t.postEditor.tipFormat].map(
+                  (tip) => (
+                    <li
+                      key={tip}
+                      className="flex items-start gap-1.5 font-mono text-[10px] leading-relaxed text-muted-foreground"
+                    >
+                      <span className="mt-px shrink-0 text-primary">›</span>
+                      {tip}
+                    </li>
+                  ),
+                )}
               </ul>
             </div>
           </aside>
@@ -261,14 +258,8 @@ export function PostEditorForm({ post }: PostEditorFormProps) {
               </span>
             </div>
 
-            <div
-              className="post-editor-wrap rounded-sm border border-border bg-card shadow-sm"
-            >
-              <EditorUI
-                extensions={extensions}
-                namespace="post-editor"
-                className="min-h-[560px]"
-              />
+            <div className="post-editor-wrap rounded-sm border border-border bg-card shadow-sm">
+              <EditorUI extensions={extensions} namespace="post-editor" className="min-h-[560px]" />
             </div>
           </div>
         </div>

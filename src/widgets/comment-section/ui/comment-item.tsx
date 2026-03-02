@@ -1,10 +1,10 @@
 import { reactionQueryOptions } from "@entities/reaction"
-import { formatShortDate } from "@shared/lib/utils"
 import { UserAvatar } from "@entities/user"
 import { CommentForm } from "@features/create-comment/ui/comment-form"
 import { useDeleteComment } from "@features/delete-comment"
 import { useToggleCommentReaction } from "@features/toggle-reaction"
 import { useT } from "@shared/i18n"
+import { formatShortDate } from "@shared/lib/utils"
 import { ReactionBar } from "@shared/ui/components/reaction-bar"
 import { AuthContext } from "@shared/ui/providers/auth-provider"
 import { useQuery } from "@tanstack/react-query"
@@ -26,9 +26,7 @@ export function CommentItem({ comment, replies, postId }: CommentItemProps) {
   const { mutate: deleteComment, isPending } = useDeleteComment(postId)
   const [isReplying, setIsReplying] = useState(false)
 
-  const { data: reactionSummary } = useQuery(
-    reactionQueryOptions.byComment(comment.id, userId),
-  )
+  const { data: reactionSummary } = useQuery(reactionQueryOptions.byComment(comment.id, userId))
   const { mutate: toggleReaction } = useToggleCommentReaction(comment.id, userId)
 
   const t = useT()
@@ -48,7 +46,10 @@ export function CommentItem({ comment, replies, postId }: CommentItemProps) {
         <div className="flex flex-1 flex-col gap-2">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-foreground">{comment.authorName}</span>
-            <time dateTime={comment.createdAt} className="font-mono text-[10px] text-muted-foreground">
+            <time
+              dateTime={comment.createdAt}
+              className="font-mono text-[10px] text-muted-foreground"
+            >
               {timeLabel}
             </time>
           </div>

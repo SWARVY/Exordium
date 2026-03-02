@@ -1,5 +1,4 @@
 import { postQueryOptions, PostBadge, type Post, type PostDraft } from "@entities/post"
-import { formatDate } from "@shared/lib/utils"
 import { DeletePostButton } from "@features/delete-post"
 import { useUpdatePost } from "@features/update-post"
 import { historyExtension, richTextExtension, type Extension } from "@jikjo/core"
@@ -8,8 +7,9 @@ import { EditorUI } from "@jikjo/ui-kit"
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin"
 import { postImageUploadAdapter } from "@shared/api/image-upload-adapter"
 import { routes } from "@shared/constants/routes"
-import { useT } from "@shared/i18n"
 import { useIsOwner } from "@shared/hooks/use-is-owner"
+import { useT } from "@shared/i18n"
+import { formatDate } from "@shared/lib/utils"
 import { AsyncBoundary } from "@shared/ui/components/async-boundary"
 import { Input } from "@shared/ui/components/input"
 import { Label } from "@shared/ui/components/label"
@@ -41,11 +41,12 @@ const editorExtensions: Extension[] = [
   createImageExtension({ uploadAdapter: postImageUploadAdapter }),
 ]
 
-
 function estimateReadingTime(content: string): number {
   try {
     const parsed = JSON.parse(content)
-    const text = JSON.stringify(parsed).replace(/"[^"]*":/g, "").replace(/[{}\[\],"]/g, " ")
+    const text = JSON.stringify(parsed)
+      .replace(/"[^"]*":/g, "")
+      .replace(/[{}\[\],"]/g, " ")
     const words = text.trim().split(/\s+/).length
     return Math.max(1, Math.ceil(words / 200))
   } catch {
@@ -89,7 +90,7 @@ function InlineEditForm({ post, onCancel, onSaved }: InlineEditFormProps) {
       }
       editor.setEditable(true)
     }, 0)
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- post.content는 초기값만 사용
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- post.content는 초기값만 사용
   }, [])
 
   const extensions = useMemo<Extension[]>(
@@ -143,7 +144,6 @@ function InlineEditForm({ post, onCancel, onSaved }: InlineEditFormProps) {
       {/* ── Two-column layout (PostEditorForm과 동일) ── */}
       <div className="mx-auto w-full max-w-5xl px-6 py-10">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-8">
-
           {/* Left: meta sidebar */}
           <aside className="flex flex-col gap-6 lg:w-64 lg:shrink-0">
             <div className="flex items-center gap-2 border-b border-border pb-3">
@@ -209,19 +209,17 @@ function InlineEditForm({ post, onCancel, onSaved }: InlineEditFormProps) {
                 // Tips
               </p>
               <ul className="flex flex-col gap-2">
-                {[
-                  t.postEditor.tipSlug,
-                  t.postEditor.tipSlashBlock,
-                  t.postEditor.tipFormat,
-                ].map((tip) => (
-                  <li
-                    key={tip}
-                    className="flex items-start gap-1.5 font-mono text-[10px] leading-relaxed text-muted-foreground"
-                  >
-                    <span className="mt-px shrink-0 text-primary">›</span>
-                    {tip}
-                  </li>
-                ))}
+                {[t.postEditor.tipSlug, t.postEditor.tipSlashBlock, t.postEditor.tipFormat].map(
+                  (tip) => (
+                    <li
+                      key={tip}
+                      className="flex items-start gap-1.5 font-mono text-[10px] leading-relaxed text-muted-foreground"
+                    >
+                      <span className="mt-px shrink-0 text-primary">›</span>
+                      {tip}
+                    </li>
+                  ),
+                )}
               </ul>
             </div>
           </aside>
@@ -235,9 +233,7 @@ function InlineEditForm({ post, onCancel, onSaved }: InlineEditFormProps) {
               </span>
             </div>
 
-            <div
-              className="post-editor-wrap rounded-sm border border-border bg-card shadow-sm"
-            >
+            <div className="post-editor-wrap rounded-sm border border-border bg-card shadow-sm">
               <EditorUI
                 extensions={extensions}
                 namespace={`post-editor-inline-${post.id}`}
@@ -286,11 +282,7 @@ function PostDetailContent({ slug }: PostDetailProps) {
 
   if (isEditing) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.2 }}
-      >
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
         <InlineEditForm
           post={post}
           onCancel={() => setIsEditing(false)}

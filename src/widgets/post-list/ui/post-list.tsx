@@ -24,9 +24,7 @@ export function PostList({ tag }: PostListProps) {
             return (
               <div className="rounded-sm border border-dashed border-border px-8 py-24 text-center">
                 <p className="font-mono text-sm font-medium text-foreground">{t.post.noPostsYet}</p>
-                <p className="mt-2 font-mono text-xs text-muted-foreground">
-                  {t.post.noPostsDesc}
-                </p>
+                <p className="mt-2 font-mono text-xs text-muted-foreground">{t.post.noPostsDesc}</p>
               </div>
             )
           }

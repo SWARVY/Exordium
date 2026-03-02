@@ -1,6 +1,6 @@
 import { ownerQueryOptions } from "@entities/owner"
-import { useT } from "@shared/i18n"
 import { routes } from "@shared/constants/routes"
+import { useT } from "@shared/i18n"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { GithubIcon } from "lucide-react"
@@ -32,9 +32,7 @@ export function Footer() {
             <span className="font-mono text-xs font-bold uppercase tracking-[0.25em] opacity-90">
               Exordium
             </span>
-            <p className="font-mono text-[11px] leading-relaxed opacity-50">
-              {t.footer.tagline}
-            </p>
+            <p className="font-mono text-[11px] leading-relaxed opacity-50">{t.footer.tagline}</p>
           </div>
 
           {/* Nav + Connect */}

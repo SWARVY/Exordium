@@ -1,8 +1,8 @@
+import emojiData from "@emoji-mart/data"
+import EmojiPicker from "@emoji-mart/react"
 import { CommentContentSchema } from "@entities/comment"
 import { useT } from "@shared/i18n"
 import { useForm } from "@tanstack/react-form"
-import EmojiPicker from "@emoji-mart/react"
-import emojiData from "@emoji-mart/data"
 import { SmileIcon } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
@@ -39,7 +39,8 @@ export function CommentForm({
       if (
         pickerRef.current?.contains(e.target as Node) ||
         btnRef.current?.contains(e.target as Node)
-      ) return
+      )
+        return
       setShowEmoji(false)
     }
     document.addEventListener("mousedown", handleClick)
@@ -149,10 +150,7 @@ export function CommentForm({
 
           {/* 이모지 피커 — absolute 오버레이 */}
           {showEmoji && (
-            <div
-              ref={pickerRef}
-              className="absolute bottom-full left-0 z-50 mb-1"
-            >
+            <div ref={pickerRef} className="absolute bottom-full left-0 z-50 mb-1">
               <EmojiPicker
                 data={emojiData}
                 onEmojiSelect={insertEmoji}

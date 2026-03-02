@@ -1,7 +1,7 @@
 import { ownerQueryOptions } from "@entities/owner"
+import { useIsOwner } from "@shared/hooks/use-is-owner"
 import { useT } from "@shared/i18n"
 import { AsyncBoundary } from "@shared/ui/components/async-boundary"
-import { useIsOwner } from "@shared/hooks/use-is-owner"
 import { Skeleton } from "@shared/ui/components/skeleton"
 import { useSuspenseQuery } from "@suspensive/react-query-5"
 import { PencilIcon } from "lucide-react"

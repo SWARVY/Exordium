@@ -110,7 +110,9 @@ export function OpenSourceForm({ defaultValues, onSubmit, isPending }: OpenSourc
           <div className="flex flex-col gap-2">
             <Label htmlFor={field.name} className={fieldLabelClass}>
               {t.projectForm.language}{" "}
-              <span className="normal-case tracking-normal text-muted-foreground/50">{t.projectForm.optional}</span>
+              <span className="normal-case tracking-normal text-muted-foreground/50">
+                {t.projectForm.optional}
+              </span>
             </Label>
             <Input
               id={field.name}

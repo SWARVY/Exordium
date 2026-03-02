@@ -1,7 +1,7 @@
-import { postQueryOptions, type Post } from "@entities/post"
 import { openSourceQueryOptions, type OpenSource } from "@entities/open-source"
-import { useT } from "@shared/i18n"
+import { postQueryOptions, type Post } from "@entities/post"
 import { routes } from "@shared/constants/routes"
+import { useT } from "@shared/i18n"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { ArrowUpRightIcon, FileTextIcon, FolderGitIcon, SearchIcon, XIcon } from "lucide-react"
@@ -9,7 +9,9 @@ import { useEffect, useRef, useState } from "react"
 
 function useSearch(q: string) {
   const { data: posts = [], isFetching: postsLoading } = useQuery(postQueryOptions.search(q))
-  const { data: projects = [], isFetching: projectsLoading } = useQuery(openSourceQueryOptions.search(q))
+  const { data: projects = [], isFetching: projectsLoading } = useQuery(
+    openSourceQueryOptions.search(q),
+  )
   return { posts, projects, isLoading: postsLoading || projectsLoading }
 }
 
@@ -90,7 +92,9 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                 {isLoading ? (
                   <p className="font-mono text-xs text-muted-foreground">{t.action.loading}</p>
                 ) : !hasResults ? (
-                  <p className="font-mono text-sm text-muted-foreground">{t.search.noResultsFor(q)}</p>
+                  <p className="font-mono text-sm text-muted-foreground">
+                    {t.search.noResultsFor(q)}
+                  </p>
                 ) : (
                   <>
                     {posts.length > 0 && (

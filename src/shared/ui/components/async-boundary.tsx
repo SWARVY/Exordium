@@ -39,9 +39,7 @@ export function AsyncBoundary({ children, fallback }: AsyncBoundaryProps) {
     <QueryErrorResetBoundary>
       {({ reset }) => (
         <ErrorBoundary fallback={QueryErrorFallback} onReset={reset}>
-          <Suspense fallback={fallback ?? <DefaultSkeleton />}>
-            {children}
-          </Suspense>
+          <Suspense fallback={fallback ?? <DefaultSkeleton />}>{children}</Suspense>
         </ErrorBoundary>
       )}
     </QueryErrorResetBoundary>
@@ -52,7 +50,11 @@ function DefaultSkeleton() {
   return (
     <div className="flex flex-col gap-3 py-8">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="h-4 animate-pulse rounded bg-muted" style={{ width: `${70 + (i % 3) * 10}%` }} />
+        <div
+          key={i}
+          className="h-4 animate-pulse rounded bg-muted"
+          style={{ width: `${70 + (i % 3) * 10}%` }}
+        />
       ))}
     </div>
   )

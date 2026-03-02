@@ -1,6 +1,6 @@
 import { LoginButton, LogoutButton } from "@features/auth"
-import { useT } from "@shared/i18n"
 import { routes } from "@shared/constants/routes"
+import { useT } from "@shared/i18n"
 import { AuthContext } from "@shared/ui/providers/auth-provider"
 import { Link } from "@tanstack/react-router"
 import { useContext } from "react"
