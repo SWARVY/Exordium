@@ -1,3 +1,4 @@
+import { formatDate } from "@shared/lib/utils"
 import { routes } from "@shared/constants/routes"
 import { Link } from "@tanstack/react-router"
 import { ArrowUpRightIcon } from "lucide-react"
@@ -11,13 +12,7 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, index = 0 }: PostCardProps) {
-  const publishedDate = post.publishedAt
-    ? new Date(post.publishedAt).toLocaleDateString("ko-KR", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
-    : null
+  const publishedDate = post.publishedAt ? formatDate(post.publishedAt) : null
 
   return (
     <motion.article

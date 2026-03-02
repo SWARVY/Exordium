@@ -1,11 +1,9 @@
 import { reactionKeys } from "@entities/reaction"
 import { supabase } from "@shared/api/supabase-client"
-import { queryClient } from "@shared/lib/query-client"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import type { ReactionEmoji, ReactionSummary } from "@entities/reaction"
 
-// Post reaction toggle
 async function togglePostReaction({
   postId,
   emoji,
@@ -34,12 +32,12 @@ async function togglePostReaction({
 }
 
 export function useTogglePostReaction(postId: string, userId: string | undefined) {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ emoji, reacted }: { emoji: ReactionEmoji; reacted: boolean }) => {
       if (!userId) throw new Error("로그인이 필요합니다")
       return togglePostReaction({ postId, emoji, userId, reacted })
     },
-    // Optimistic update
     onMutate: async ({ emoji, reacted }) => {
       const queryKey = reactionKeys.byPost(postId)
       await queryClient.cancelQueries({ queryKey })
@@ -65,7 +63,6 @@ export function useTogglePostReaction(postId: string, userId: string | undefined
   })
 }
 
-// Comment reaction toggle
 async function toggleCommentReaction({
   commentId,
   emoji,
@@ -94,6 +91,7 @@ async function toggleCommentReaction({
 }
 
 export function useToggleCommentReaction(commentId: string, userId: string | undefined) {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ emoji, reacted }: { emoji: ReactionEmoji; reacted: boolean }) => {
       if (!userId) throw new Error("로그인이 필요합니다")

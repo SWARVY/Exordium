@@ -1,7 +1,6 @@
 import { commentKeys } from "@entities/comment/api/comment-keys"
 import { supabase } from "@shared/api/supabase-client"
-import { queryClient } from "@shared/lib/query-client"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import type { CreateComment } from "@entities/comment"
 
@@ -37,6 +36,7 @@ async function createComment({ postId, payload }: { postId: string; payload: Cre
 }
 
 export function useCreateComment(postId: string) {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (payload: CreateComment) => createComment({ postId, payload }),
     onSuccess: () => {

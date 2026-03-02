@@ -7,6 +7,21 @@ import type { Post } from "../model/post-schema"
 
 const PAGE_SIZE = 10
 
+function mapRow(row: Record<string, unknown>): Post {
+  return {
+    id: row.id as string,
+    slug: row.slug as string,
+    title: row.title as string,
+    description: row.description as string,
+    content: row.content as string,
+    coverImage: (row.cover_image as string | null) ?? null,
+    tags: (row.tags as string[]) ?? [],
+    publishedAt: (row.published_at as string | null) ?? null,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  }
+}
+
 export const postQueryOptions = {
   list: (filters?: { tag?: string }) =>
     infiniteQueryOptions({
@@ -24,7 +39,7 @@ export const postQueryOptions = {
 
         const { data, error } = await query
         if (error) throw error
-        return data as Post[]
+        return (data ?? []).map(mapRow)
       },
       initialPageParam: 0,
       getNextPageParam: (lastPage, _allPages, lastPageParam) =>
@@ -37,7 +52,7 @@ export const postQueryOptions = {
       queryFn: async () => {
         const { data, error } = await supabase.from("posts").select("*").eq("slug", slug).single()
         if (error) throw error
-        return data as Post
+        return mapRow(data as Record<string, unknown>)
       },
     }),
 
@@ -54,7 +69,7 @@ export const postQueryOptions = {
           .order("published_at", { ascending: false })
           .limit(20)
         if (error) throw error
-        return data as Post[]
+        return (data ?? []).map(mapRow)
       },
       enabled: q.trim().length > 0,
     }),

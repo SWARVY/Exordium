@@ -1,12 +1,10 @@
 import { ownerKeys } from "@entities/owner/api/owner-keys"
 import { supabase } from "@shared/api/supabase-client"
-import { queryClient } from "@shared/lib/query-client"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import type { OwnerProfileForm } from "@entities/owner"
 
 async function updateProfile(form: OwnerProfileForm) {
-  // owner_profile은 단일 행 — 기존 행 id를 먼저 조회해 WHERE 절에 사용
   const { data: existing, error: fetchError } = await supabase
     .from("owner_profile")
     .select("id")
@@ -39,6 +37,7 @@ async function updateProfile(form: OwnerProfileForm) {
 }
 
 export function useUpdateProfile() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: updateProfile,
     onSuccess: () => {

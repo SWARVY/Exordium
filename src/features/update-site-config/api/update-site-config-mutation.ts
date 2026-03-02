@@ -1,7 +1,6 @@
 import { siteConfigKeys } from "@entities/site-config"
 import { supabase } from "@shared/api/supabase-client"
-import { queryClient } from "@shared/lib/query-client"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import type { SiteConfig } from "@entities/site-config"
 
@@ -21,6 +20,7 @@ async function updateSiteConfig(patch: Partial<SiteConfig>) {
 }
 
 export function useUpdateSiteConfig() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: updateSiteConfig,
     onSuccess: () => {

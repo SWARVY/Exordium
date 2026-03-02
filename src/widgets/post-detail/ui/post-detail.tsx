@@ -1,4 +1,5 @@
 import { postQueryOptions, PostBadge, type Post, type PostDraft } from "@entities/post"
+import { formatDate } from "@shared/lib/utils"
 import { DeletePostButton } from "@features/delete-post"
 import { useUpdatePost } from "@features/update-post"
 import { historyExtension, richTextExtension, type Extension } from "@jikjo/core"
@@ -279,13 +280,7 @@ function PostDetailContent({ slug }: PostDetailProps) {
   const navigate = useNavigate()
   const [isEditing, setIsEditing] = useState(false)
 
-  const publishedDate = post.publishedAt
-    ? new Date(post.publishedAt).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : null
+  const publishedDate = post.publishedAt ? formatDate(post.publishedAt) : null
 
   const readingTime = estimateReadingTime(post.content)
 

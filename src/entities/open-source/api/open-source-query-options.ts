@@ -5,6 +5,19 @@ import { openSourceKeys } from "./open-source-keys"
 
 import type { OpenSource } from "../model/open-source-schema"
 
+function mapRow(row: Record<string, unknown>): OpenSource {
+  return {
+    id: row.id as string,
+    name: row.name as string,
+    description: row.description as string,
+    repoUrl: row.repo_url as string,
+    language: (row.language as string | null) ?? null,
+    order: row.order as number,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  }
+}
+
 export const openSourceQueryOptions = {
   list: () =>
     queryOptions({
@@ -15,7 +28,7 @@ export const openSourceQueryOptions = {
           .select("*")
           .order("order", { ascending: true })
         if (error) throw error
-        return data as OpenSource[]
+        return (data ?? []).map(mapRow)
       },
     }),
 
@@ -31,7 +44,7 @@ export const openSourceQueryOptions = {
           .order("order", { ascending: true })
           .limit(20)
         if (error) throw error
-        return data as OpenSource[]
+        return (data ?? []).map(mapRow)
       },
       enabled: q.trim().length > 0,
     }),

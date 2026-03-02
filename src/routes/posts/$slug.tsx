@@ -1,11 +1,10 @@
 import { postQueryOptions } from "@entities/post"
 import { buildMeta } from "@shared/constants/seo"
-import { queryClient } from "@shared/lib/query-client"
 import { createFileRoute } from "@tanstack/react-router"
 import { PostDetail } from "@widgets/post-detail"
 
 export const Route = createFileRoute("/posts/$slug")({
-  loader: ({ params }) => queryClient.ensureQueryData(postQueryOptions.detail(params.slug)),
+  loader: ({ params, context }) => context.queryClient.ensureQueryData(postQueryOptions.detail(params.slug)),
   head: ({ loaderData, params }) => ({
     meta: buildMeta({
       title: loaderData?.title ?? params.slug,

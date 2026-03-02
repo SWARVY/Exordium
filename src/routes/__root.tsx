@@ -4,14 +4,14 @@ import { ErrorPage } from "@shared/ui/components/error-page/error-page";
 import { NotFoundPage } from "@shared/ui/components/error-page/not-found-page";
 import { LocaleProvider } from "@shared/i18n";
 import { AuthProvider } from "@shared/ui/providers/auth-provider";
-import { QueryProvider } from "@shared/ui/providers/query-provider";
 import { ThemeProvider } from "@shared/ui/providers/theme-provider";
 import { TanStackDevtools } from "@tanstack/react-devtools";
+import { type QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import {
   HeadContent,
   Scripts,
-  createRootRoute,
+  createRootRouteWithContext,
   Outlet,
   useRouterState,
 } from "@tanstack/react-router";
@@ -23,7 +23,7 @@ import appCss from "../styles.css?url";
 
 const themeInitScript = getThemeInitScript();
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   notFoundComponent: NotFoundPage,
   errorComponent: ({ error, reset }) => (
     <ErrorPage error={error} reset={reset} />
@@ -73,33 +73,31 @@ function RootLayout() {
   const isEditorPage = pathname === "/posts/new" || pathname.endsWith("/edit");
 
   return (
-    <QueryProvider>
-      <AuthProvider>
-        <LocaleProvider>
-          <ThemeProvider>
-            <div className="flex min-h-screen flex-col bg-background text-foreground">
-              <Header />
-              <main className="flex-1">
-                <Outlet />
-              </main>
-              <Footer />
-              <div className="h-16 sm:hidden" aria-hidden="true" />
-              <BottomNav />
-              {!isEditorPage && <WriteFab />}
-            </div>
-            <TanStackDevtools
-              config={{ position: "bottom-right" }}
-              plugins={[
-                {
-                  name: "TanStack Router",
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-                { name: "TanStack Query", render: <ReactQueryDevtoolsPanel /> },
-              ]}
-            />
-          </ThemeProvider>
-        </LocaleProvider>
-      </AuthProvider>
-    </QueryProvider>
+    <AuthProvider>
+      <LocaleProvider>
+        <ThemeProvider>
+          <div className="flex min-h-screen flex-col bg-background text-foreground">
+            <Header />
+            <main className="flex-1">
+              <Outlet />
+            </main>
+            <Footer />
+            <div className="h-16 sm:hidden" aria-hidden="true" />
+            <BottomNav />
+            {!isEditorPage && <WriteFab />}
+          </div>
+          <TanStackDevtools
+            config={{ position: "bottom-right" }}
+            plugins={[
+              {
+                name: "TanStack Router",
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+              { name: "TanStack Query", render: <ReactQueryDevtoolsPanel /> },
+            ]}
+          />
+        </ThemeProvider>
+      </LocaleProvider>
+    </AuthProvider>
   );
 }

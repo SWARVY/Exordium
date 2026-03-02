@@ -1,13 +1,12 @@
 import { siteConfigQueryOptions } from "@entities/site-config"
 import { buildMeta } from "@shared/constants/seo"
 import { AsyncBoundary } from "@shared/ui/components/async-boundary"
-import { queryClient } from "@shared/lib/query-client"
 import { createFileRoute } from "@tanstack/react-router"
 import { PageHero } from "@widgets/page-hero"
 import { PostList } from "@widgets/post-list"
 
 export const Route = createFileRoute("/posts/")({
-  loader: () => queryClient.ensureQueryData(siteConfigQueryOptions.config()),
+  loader: ({ context }) => context.queryClient.ensureQueryData(siteConfigQueryOptions.config()),
   head: () => ({
     meta: buildMeta({
       title: "Posts",

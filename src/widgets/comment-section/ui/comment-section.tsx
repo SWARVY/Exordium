@@ -1,11 +1,9 @@
 import { CommentForm } from "@features/create-comment/ui/comment-form"
 import { useT } from "@shared/i18n"
-import { AsyncBoundary } from "@shared/ui/components/async-boundary"
 import { AuthContext } from "@shared/ui/providers/auth-provider"
 import { useContext } from "react"
 
 import { CommentList } from "./comment-list"
-import { CommentSkeleton } from "./comment-skeleton"
 
 interface CommentSectionProps {
   postId: string
@@ -37,9 +35,7 @@ export function CommentSection({ postId }: CommentSectionProps) {
       )}
 
       {/* 댓글 목록 */}
-      <AsyncBoundary fallback={<CommentSkeleton />}>
-        <CommentList postId={postId} />
-      </AsyncBoundary>
+      <CommentList postId={postId} />
     </section>
   )
 }
