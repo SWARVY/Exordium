@@ -2,7 +2,7 @@ import { openSourceKeys, openSourceQueryOptions, type OpenSource } from "@entiti
 import { OpenSourceFormDialog, useReorderOpenSource } from "@features/manage-open-source"
 import { useT } from "@shared/i18n"
 import { useIsOwner } from "@shared/hooks/use-is-owner"
-import { queryClient } from "@shared/lib/query-client"
+import { useQueryClient } from "@tanstack/react-query"
 import {
   DndContext,
   DragOverlay,
@@ -22,6 +22,7 @@ import { OpenSourceSkeleton } from "./open-source-skeleton"
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core"
 
 function OpenSourceListContent() {
+  const queryClient = useQueryClient()
   const { data } = useSuspenseQuery(openSourceQueryOptions.list())
   const isOwner = useIsOwner()
   const t = useT()
