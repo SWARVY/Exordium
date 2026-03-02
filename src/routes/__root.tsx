@@ -84,16 +84,18 @@ function RootLayout() {
             <BottomNav />
             {!isEditorPage && <WriteFab />}
           </div>
-          <TanStackDevtools
-            config={{ position: "bottom-right" }}
-            plugins={[
-              {
-                name: "TanStack Router",
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-              { name: "TanStack Query", render: <ReactQueryDevtoolsPanel /> },
-            ]}
-          />
+          {import.meta.env.DEV && (
+            <TanStackDevtools
+              config={{ position: "bottom-right" }}
+              plugins={[
+                {
+                  name: "TanStack Router",
+                  render: <TanStackRouterDevtoolsPanel />,
+                },
+                { name: "TanStack Query", render: <ReactQueryDevtoolsPanel /> },
+              ]}
+            />
+          )}
         </ThemeProvider>
       </LocaleProvider>
     </AuthProvider>
