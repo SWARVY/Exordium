@@ -1,9 +1,16 @@
+import { ownerQueryOptions } from "@entities/owner"
+import { postQueryOptions } from "@entities/post"
 import { buildMeta } from "@shared/constants/seo"
 import { createFileRoute } from "@tanstack/react-router"
 import { OwnerProfile } from "@widgets/owner-profile"
 import { PostList } from "@widgets/post-list"
 
 export const Route = createFileRoute("/")({
+  loader: ({ context }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData(ownerQueryOptions.profile()),
+      context.queryClient.prefetchInfiniteQuery(postQueryOptions.list({})),
+    ]),
   head: () => ({
     meta: buildMeta({ path: "/" }),
   }),
