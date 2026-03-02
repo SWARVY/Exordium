@@ -277,9 +277,28 @@ pre {
   border-radius: 6px !important;
 }
 
-/* ─── Emoji Mart: remove own border/radius, let wrapper provide styling ─── */
-em-emoji-picker {
-  --border-radius: 0;
-  --color-border: transparent;
-  --color-border-over: transparent;
+/* ─── Frimousse emoji picker ─── */
+[frimousse-category-header] {
+  padding: 0.25rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+  background: var(--card);
+}
+
+[frimousse-emoji] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+[frimousse-emoji]:hover,
+[frimousse-emoji][data-active="true"] {
+  background-color: var(--accent);
 }

@@ -1,8 +1,7 @@
-import emojiData from "@emoji-mart/data"
-import EmojiPicker from "@emoji-mart/react"
 import { CommentContentSchema } from "@entities/comment"
 import { useT } from "@shared/i18n"
 import { useForm } from "@tanstack/react-form"
+import { EmojiPicker } from "frimousse"
 import { SmileIcon } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
@@ -65,18 +64,18 @@ export function CommentForm({
     },
   })
 
-  function insertEmoji(emoji: { native: string }) {
+  function insertEmoji(native: string) {
     const el = textareaRef.current
     if (!el) return
     const start = el.selectionStart ?? el.value.length
     const end = el.selectionEnd ?? el.value.length
     const current = form.getFieldValue("content")
-    const next = current.slice(0, start) + emoji.native + current.slice(end)
+    const next = current.slice(0, start) + native + current.slice(end)
     form.setFieldValue("content", next)
     // 커서를 이모지 뒤로 이동
     requestAnimationFrame(() => {
       el.focus()
-      const pos = start + emoji.native.length
+      const pos = start + native.length
       el.setSelectionRange(pos, pos)
     })
   }
@@ -152,20 +151,30 @@ export function CommentForm({
           {showEmoji && (
             <div
               ref={pickerRef}
-              className="absolute bottom-full left-0 z-50 mb-2 overflow-hidden rounded-sm border border-border shadow-xl"
+              className="absolute bottom-full left-0 z-50 mb-2 overflow-hidden rounded-sm border border-border bg-card shadow-xl"
             >
-              <EmojiPicker
-                data={emojiData}
-                onEmojiSelect={insertEmoji}
-                theme="auto"
+              <EmojiPicker.Root
+                onEmojiSelect={({ emoji }) => insertEmoji(emoji)}
                 locale="ko"
-                previewPosition="none"
-                skinTonePosition="none"
-                maxFrequentRows={1}
-                perLine={8}
-                emojiSize={22}
-                emojiButtonSize={30}
-              />
+                columns={9}
+                className="flex w-72 flex-col"
+              >
+                <div className="border-b border-border px-2 py-2">
+                  <EmojiPicker.Search
+                    placeholder="검색..."
+                    className="w-full bg-transparent font-mono text-xs text-foreground outline-none placeholder:text-muted-foreground/40"
+                  />
+                </div>
+                <EmojiPicker.Viewport className="h-60">
+                  <EmojiPicker.Loading className="flex h-full items-center justify-center font-mono text-xs text-muted-foreground">
+                    로딩 중…
+                  </EmojiPicker.Loading>
+                  <EmojiPicker.Empty className="flex h-full items-center justify-center font-mono text-xs text-muted-foreground">
+                    이모지를 찾을 수 없어요
+                  </EmojiPicker.Empty>
+                  <EmojiPicker.List />
+                </EmojiPicker.Viewport>
+              </EmojiPicker.Root>
             </div>
           )}
 
