@@ -279,11 +279,15 @@ pre {
 
 /* ─── Frimousse emoji picker ─── */
 [frimousse-category-header] {
-  padding: 0.25rem 0.5rem;
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+  height: 28px;
   font-family: var(--font-mono);
   font-size: 10px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: var(--muted-foreground);
   background: var(--card);
 }
@@ -299,6 +303,6 @@ pre {
 }
 
 [frimousse-emoji]:hover,
-[frimousse-emoji][data-active="true"] {
+[frimousse-emoji][data-active] {
   background-color: var(--accent);
 }
