@@ -276,3 +276,10 @@ pre {
     0 0 0 1px var(--border) !important;
   border-radius: 6px !important;
 }
+
+/* ─── Emoji Mart: remove own border/radius, let wrapper provide styling ─── */
+em-emoji-picker {
+  --border-radius: 0;
+  --color-border: transparent;
+  --color-border-over: transparent;
+}

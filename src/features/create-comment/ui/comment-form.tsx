@@ -150,7 +150,10 @@ export function CommentForm({
 
           {/* 이모지 피커 — absolute 오버레이 */}
           {showEmoji && (
-            <div ref={pickerRef} className="absolute bottom-full left-0 z-50 mb-1">
+            <div
+              ref={pickerRef}
+              className="absolute bottom-full left-0 z-50 mb-2 overflow-hidden rounded-sm border border-border shadow-xl"
+            >
               <EmojiPicker
                 data={emojiData}
                 onEmojiSelect={insertEmoji}
@@ -158,7 +161,10 @@ export function CommentForm({
                 locale="ko"
                 previewPosition="none"
                 skinTonePosition="none"
-                maxFrequentRows={2}
+                maxFrequentRows={1}
+                perLine={8}
+                emojiSize={22}
+                emojiButtonSize={30}
               />
             </div>
           )}
