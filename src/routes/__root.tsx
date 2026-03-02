@@ -66,7 +66,7 @@ function SonnerToaster() {
             "rounded-sm border border-border bg-card shadow-xl",
             "px-4 py-3",
           ].join(" "),
-          icon: "shrink-0 size-4 text-muted-foreground",
+          icon: "shrink-0 flex items-center justify-center size-4 text-muted-foreground",
           content: "flex min-w-0 flex-1 flex-col gap-0.5",
           title: "font-mono text-sm font-medium text-foreground",
           description: "font-mono text-xs text-muted-foreground",
