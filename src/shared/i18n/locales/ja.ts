@@ -2,7 +2,7 @@ import type { Translations } from "./ko"
 
 export const ja: Translations = {
   nav: {
-    home: "ホーム",
+    home: "Home",
     posts: "Posts",
     projects: "Projects",
   },

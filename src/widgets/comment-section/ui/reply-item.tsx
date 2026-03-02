@@ -1,4 +1,5 @@
 import { reactionQueryOptions } from "@entities/reaction"
+import { formatShortDate } from "@shared/lib/utils"
 import { UserAvatar } from "@entities/user"
 import { useDeleteComment } from "@features/delete-comment"
 import { useToggleCommentReaction } from "@features/toggle-reaction"
@@ -27,13 +28,10 @@ export function ReplyItem({ reply, postId }: ReplyItemProps) {
   const { mutate: toggleReaction } = useToggleCommentReaction(reply.id, userId)
   const t = useT()
 
-  const timeLabel = new Date(reply.createdAt).toLocaleDateString("ko-KR", {
-    month: "short",
-    day: "numeric",
-  })
+  const timeLabel = formatShortDate(reply.createdAt)
 
   return (
-    <article className="flex gap-3">
+    <article className="flex gap-3 bg-muted/30 p-4">
       <UserAvatar
         avatarUrl={reply.authorAvatarUrl}
         githubLogin={reply.authorName}

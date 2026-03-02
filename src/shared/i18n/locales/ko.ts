@@ -1,6 +1,6 @@
 export const ko = {
   nav: {
-    home: "홈",
+    home: "Home",
     posts: "Posts",
     projects: "Projects",
   },

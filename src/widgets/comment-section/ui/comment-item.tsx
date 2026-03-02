@@ -1,4 +1,5 @@
 import { reactionQueryOptions } from "@entities/reaction"
+import { formatShortDate } from "@shared/lib/utils"
 import { UserAvatar } from "@entities/user"
 import { CommentForm } from "@features/create-comment/ui/comment-form"
 import { useDeleteComment } from "@features/delete-comment"
@@ -33,14 +34,11 @@ export function CommentItem({ comment, replies, postId }: CommentItemProps) {
   const t = useT()
   const canDelete = userId === comment.authorId
 
-  const timeLabel = new Date(comment.createdAt).toLocaleDateString("ko-KR", {
-    month: "short",
-    day: "numeric",
-  })
+  const timeLabel = formatShortDate(comment.createdAt)
 
   return (
-    <article className="flex flex-col gap-3">
-      <div className="flex gap-3">
+    <article className="flex flex-col rounded-sm border border-border bg-card">
+      <div className="flex gap-3 p-4">
         <UserAvatar
           avatarUrl={comment.authorAvatarUrl}
           githubLogin={comment.authorName}
@@ -94,9 +92,9 @@ export function CommentItem({ comment, replies, postId }: CommentItemProps) {
       </div>
 
       {replies.length > 0 && (
-        <ul className="ml-9 flex flex-col gap-3 border-l border-border pl-4">
+        <ul className="flex flex-col border-t border-border">
           {replies.map((reply) => (
-            <li key={reply.id}>
+            <li key={reply.id} className="border-b border-border last:border-b-0">
               <ReplyItem reply={reply} postId={postId} />
             </li>
           ))}
@@ -104,7 +102,7 @@ export function CommentItem({ comment, replies, postId }: CommentItemProps) {
       )}
 
       {isReplying && (
-        <div className="pl-9">
+        <div className="border-t border-border p-4">
           <CommentForm
             postId={postId}
             parentId={comment.id}
