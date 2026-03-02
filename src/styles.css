@@ -182,7 +182,7 @@ pre {
   inset: 0;
   background: var(--primary);
   mix-blend-mode: color;
-  opacity: 0.3;
+  opacity: 0.15;
   clip-path: polygon(28px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 28px);
   pointer-events: none;
 }
