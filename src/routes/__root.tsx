@@ -59,14 +59,19 @@ function SonnerToaster() {
       theme={mode}
       position="bottom-right"
       toastOptions={{
+        unstyled: true,
         classNames: {
-          toast:
-            "font-mono text-sm border border-border bg-card text-foreground shadow-lg rounded-sm",
-          title: "font-medium",
-          description: "text-xs text-muted-foreground",
-          actionButton: "bg-primary text-primary-foreground",
-          success: "border-border",
-          error: "border-destructive/40",
+          toast: [
+            "flex w-[356px] items-center gap-3",
+            "rounded-sm border border-border bg-card shadow-xl",
+            "px-4 py-3",
+          ].join(" "),
+          icon: "shrink-0 size-4 text-muted-foreground",
+          content: "flex min-w-0 flex-1 flex-col gap-0.5",
+          title: "font-mono text-sm font-medium text-foreground",
+          description: "font-mono text-xs text-muted-foreground",
+          success: "[&_[data-icon]]:text-primary",
+          error: "border-destructive/30 [&_[data-icon]]:text-destructive",
         },
       }}
     />
