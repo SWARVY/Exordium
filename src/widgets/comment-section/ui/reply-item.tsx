@@ -29,7 +29,7 @@ export function ReplyItem({ reply, postId }: ReplyItemProps) {
   const timeLabel = formatShortDate(reply.createdAt)
 
   return (
-    <article className="flex gap-3 rounded-sm bg-muted/40 p-3">
+    <article className="flex gap-3 py-1">
       <UserAvatar
         avatarUrl={reply.authorAvatarUrl}
         githubLogin={reply.authorName}
