@@ -24,13 +24,25 @@ export function LocaleProvider({ children }: LocaleProviderProps) {
   const [locale, setLocaleState] = useState<Locale>("ko")
 
   useEffect(() => {
-    const stored = localStorage.getItem("locale")
-    if (stored === "ko" || stored === "en" || stored === "ja") setLocaleState(stored)
+    try {
+      const stored = localStorage.getItem("locale")
+      if (stored === "ko" || stored === "en" || stored === "ja") setLocaleState(stored)
+    } catch {
+      /* Keep the default locale when storage is unavailable. */
+    }
   }, [])
+
+  useEffect(() => {
+    document.documentElement.lang = locale
+  }, [locale])
 
   const setLocale = (l: Locale) => {
     setLocaleState(l)
-    localStorage.setItem("locale", l)
+    try {
+      localStorage.setItem("locale", l)
+    } catch {
+      /* Keep the selection for this session. */
+    }
   }
 
   return <LocaleContext.Provider value={{ locale, setLocale }}>{children}</LocaleContext.Provider>

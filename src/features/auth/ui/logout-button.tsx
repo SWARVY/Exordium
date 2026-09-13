@@ -1,20 +1,24 @@
+import { useHydrated } from "@shared/hooks/use-hydrated"
 import { useT } from "@shared/i18n"
+import { LogOutIcon } from "lucide-react"
 
 import { useSignOut } from "../model/use-auth"
+import { AuthActionButton, type AuthButtonVariant } from "./auth-action-button"
 
-export function LogoutButton() {
+export function LogoutButton({ variant = "default" }: { variant?: AuthButtonVariant }) {
   const { mutate: signOut, isPending } = useSignOut()
   const t = useT()
+  const hydrated = useHydrated()
 
   return (
-    <button
-      type="button"
+    <AuthActionButton
+      variant={variant}
+      icon={LogOutIcon}
+      label={t.action.logout}
+      pendingLabel={t.action.loading}
+      isPending={isPending}
       onClick={() => signOut()}
-      disabled={isPending}
-      aria-label={t.action.logout}
-      className="rounded-full px-3 py-1.5 font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-    >
-      {isPending ? "..." : t.action.logout}
-    </button>
+      disabled={!hydrated}
+    />
   )
 }

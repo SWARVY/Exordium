@@ -34,12 +34,15 @@ export interface ColorPalette {
   name: string
   // Light mode
   primary: string
+  primaryInk: string
+  primaryDisplay?: string
   primaryForeground: string
   accent: string
   accentForeground: string
   ring: string
   // Dark mode
   darkPrimary: string
+  darkPrimaryInk: string
   darkPrimaryForeground: string
   darkAccent: string
   darkAccentForeground: string
@@ -51,6 +54,8 @@ export interface ColorPalette {
 export const COLOR_PALETTES: ColorPalette[] = [
   {
     id: "neutral",
+    primaryInk: "oklch(0.205 0 0)",
+    darkPrimaryInk: "oklch(0.922 0 0)",
     name: "Neutral",
     primary: "oklch(0.205 0 0)",
     primaryForeground: "oklch(0.985 0 0)",
@@ -93,9 +98,11 @@ export const COLOR_PALETTES: ColorPalette[] = [
   },
   {
     id: "rose",
+    primaryInk: "oklch(0.55 0.246 16.439)",
+    darkPrimaryInk: "oklch(0.704 0.191 22.216)",
     name: "Rose",
     primary: "oklch(0.645 0.246 16.439)",
-    primaryForeground: "oklch(0.985 0 0)",
+    primaryForeground: "#101010",
     accent: "oklch(0.969 0.015 12.422)",
     accentForeground: "oklch(0.205 0 0)",
     ring: "oklch(0.645 0.246 16.439)",
@@ -135,9 +142,11 @@ export const COLOR_PALETTES: ColorPalette[] = [
   },
   {
     id: "violet",
+    primaryInk: "oklch(0.56 0.25 292.717)",
+    darkPrimaryInk: "oklch(0.702 0.183 292.717)",
     name: "Violet",
     primary: "oklch(0.606 0.25 292.717)",
-    primaryForeground: "oklch(0.985 0 0)",
+    primaryForeground: "#000000",
     accent: "oklch(0.96 0.018 272.314)",
     accentForeground: "oklch(0.205 0 0)",
     ring: "oklch(0.606 0.25 292.717)",
@@ -177,9 +186,11 @@ export const COLOR_PALETTES: ColorPalette[] = [
   },
   {
     id: "teal",
+    primaryInk: "oklch(0.51 0.118 184.704)",
+    darkPrimaryInk: "oklch(0.696 0.17 162.48)",
     name: "Teal",
     primary: "oklch(0.6 0.118 184.704)",
-    primaryForeground: "oklch(0.985 0 0)",
+    primaryForeground: "#101010",
     accent: "oklch(0.953 0.051 180.801)",
     accentForeground: "oklch(0.205 0 0)",
     ring: "oklch(0.6 0.118 184.704)",
@@ -219,6 +230,8 @@ export const COLOR_PALETTES: ColorPalette[] = [
   },
   {
     id: "blue",
+    primaryInk: "oklch(0.45 0.22 255)",
+    darkPrimaryInk: "oklch(0.65 0.2 255)",
     name: "Blue",
     primary: "oklch(0.45 0.22 255)",
     primaryForeground: "oklch(0.985 0 0)",
@@ -261,6 +274,9 @@ export const COLOR_PALETTES: ColorPalette[] = [
   },
   {
     id: "amber",
+    primaryInk: "oklch(0.54 0.188 70.08)",
+    primaryDisplay: "oklch(0.65 0.188 70.08)",
+    darkPrimaryInk: "oklch(0.828 0.189 84.429)",
     name: "Amber",
     primary: "oklch(0.769 0.188 70.08)",
     primaryForeground: "oklch(0.145 0 0)",

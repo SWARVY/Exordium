@@ -9,6 +9,9 @@ export function getThemeInitScript(): string {
     COLOR_PALETTES.map((p) => ({
       id: p.id,
       primary: p.primary,
+      primaryInk: p.primaryInk,
+      primaryDisplay: p.primaryDisplay,
+      darkPrimaryInk: p.darkPrimaryInk,
       primaryForeground: p.primaryForeground,
       accent: p.accent,
       accentForeground: p.accentForeground,
@@ -25,8 +28,8 @@ export function getThemeInitScript(): string {
   return `(function(){
   var palettes = ${palettesJson};
   var defaultId = ${JSON.stringify(DEFAULT_PALETTE_ID)};
-  var storedMode = localStorage.getItem('theme-mode');
-  var storedPalette = localStorage.getItem('theme-palette');
+  var storedMode, storedPalette;
+  try { storedMode = localStorage.getItem('theme-mode'); storedPalette = localStorage.getItem('theme-palette'); } catch (error) {}
   var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   var mode = (storedMode === 'dark' || storedMode === 'light') ? storedMode : (prefersDark ? 'dark' : 'light');
   var paletteId = storedPalette || defaultId;
@@ -36,6 +39,8 @@ export function getThemeInitScript(): string {
   if (isDark) root.classList.add('dark');
   if (!palette) return;
   root.style.setProperty('--primary', isDark ? palette.darkPrimary : palette.primary);
+  root.style.setProperty('--primary-ink', isDark ? palette.darkPrimaryInk : palette.primaryInk);
+  root.style.setProperty('--primary-display', isDark ? palette.darkPrimary : (palette.primaryDisplay || palette.primary));
   root.style.setProperty('--primary-foreground', isDark ? palette.darkPrimaryForeground : palette.primaryForeground);
   root.style.setProperty('--accent', isDark ? palette.darkAccent : palette.accent);
   root.style.setProperty('--accent-foreground', isDark ? palette.darkAccentForeground : palette.accentForeground);
