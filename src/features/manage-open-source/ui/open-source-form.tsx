@@ -3,22 +3,31 @@ import {
   type OpenSourceForm as OpenSourceFormType,
 } from "@entities/open-source"
 import { useT } from "@shared/i18n"
+import { fieldErrorMessage } from "@shared/lib/field-error"
+import { Button } from "@shared/ui/components/button"
+import { FieldError } from "@shared/ui/components/field-error"
 import { Input } from "@shared/ui/components/input"
 import { Label } from "@shared/ui/components/label"
 import { useForm } from "@tanstack/react-form"
+import { useRef } from "react"
 
 interface OpenSourceFormProps {
   defaultValues?: Partial<OpenSourceFormType>
   onSubmit: (values: OpenSourceFormType) => void
   isPending?: boolean
+  onCancel?: () => void
 }
 
-const fieldLabelClass = "font-mono text-xs uppercase tracking-widest text-muted-foreground"
-const inputClass =
-  "rounded-sm border-border bg-background font-mono text-sm focus-visible:border-primary focus-visible:ring-primary/20"
+const fieldLabelClass = "form-label"
 
-export function OpenSourceForm({ defaultValues, onSubmit, isPending }: OpenSourceFormProps) {
+export function OpenSourceForm({
+  defaultValues,
+  onSubmit,
+  isPending,
+  onCancel,
+}: OpenSourceFormProps) {
   const t = useT()
+  const formRef = useRef<HTMLFormElement>(null)
   const form = useForm({
     formId: "open-source-form",
     defaultValues: {
@@ -33,76 +42,85 @@ export function OpenSourceForm({ defaultValues, onSubmit, isPending }: OpenSourc
 
   return (
     <form
+      ref={formRef}
       onSubmit={(e) => {
         e.preventDefault()
-        form.handleSubmit()
+        void form.handleSubmit().then(() => {
+          formRef.current?.querySelector<HTMLElement>("[aria-invalid='true']")?.focus()
+        })
       }}
       className="flex flex-col gap-4"
     >
       <form.Field name="name">
-        {(field) => (
-          <div className="flex flex-col gap-2">
-            <Label htmlFor={field.name} className={fieldLabelClass}>
-              {t.projectForm.name}
-            </Label>
-            <Input
-              id={field.name}
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
-              placeholder={t.projectForm.namePlaceholder}
-              className={inputClass}
-            />
-            {field.state.meta.errors[0] && (
-              <p className="font-mono text-xs text-destructive">
-                {String(field.state.meta.errors[0])}
-              </p>
-            )}
-          </div>
-        )}
+        {(field) => {
+          const errorId = `${field.name}-error`
+          const invalid = Boolean(fieldErrorMessage(field.state.meta.errors))
+          return (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor={field.name} className={fieldLabelClass}>
+                {t.projectForm.name}
+              </Label>
+              <Input
+                id={field.name}
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                placeholder={t.projectForm.namePlaceholder}
+                aria-invalid={invalid}
+                aria-describedby={invalid ? errorId : undefined}
+              />
+              <FieldError errors={field.state.meta.errors} id={errorId} />
+            </div>
+          )
+        }}
       </form.Field>
 
       <form.Field name="description">
-        {(field) => (
-          <div className="flex flex-col gap-2">
-            <Label htmlFor={field.name} className={fieldLabelClass}>
-              {t.projectForm.desc}
-            </Label>
-            <Input
-              id={field.name}
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
-              placeholder={t.projectForm.descPlaceholder}
-              className={inputClass}
-            />
-            {field.state.meta.errors[0] && (
-              <p className="font-mono text-xs text-destructive">
-                {String(field.state.meta.errors[0])}
-              </p>
-            )}
-          </div>
-        )}
+        {(field) => {
+          const errorId = `${field.name}-error`
+          const invalid = Boolean(fieldErrorMessage(field.state.meta.errors))
+          return (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor={field.name} className={fieldLabelClass}>
+                {t.projectForm.desc}
+              </Label>
+              <Input
+                id={field.name}
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                placeholder={t.projectForm.descPlaceholder}
+                aria-invalid={invalid}
+                aria-describedby={invalid ? errorId : undefined}
+              />
+              <FieldError errors={field.state.meta.errors} id={errorId} />
+            </div>
+          )
+        }}
       </form.Field>
 
       <form.Field name="repoUrl">
-        {(field) => (
-          <div className="flex flex-col gap-2">
-            <Label htmlFor={field.name} className={fieldLabelClass}>
-              {t.projectForm.repoUrl}
-            </Label>
-            <Input
-              id={field.name}
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
-              placeholder="https://github.com/..."
-              className={inputClass}
-            />
-            {field.state.meta.errors[0] && (
-              <p className="font-mono text-xs text-destructive">
-                {String(field.state.meta.errors[0])}
-              </p>
-            )}
-          </div>
-        )}
+        {(field) => {
+          const errorId = `${field.name}-error`
+          const invalid = Boolean(fieldErrorMessage(field.state.meta.errors))
+          return (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor={field.name} className={fieldLabelClass}>
+                {t.projectForm.repoUrl}
+              </Label>
+              <Input
+                id={field.name}
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                placeholder="https://github.com/..."
+                aria-invalid={invalid}
+                aria-describedby={invalid ? errorId : undefined}
+              />
+              <FieldError errors={field.state.meta.errors} id={errorId} />
+            </div>
+          )
+        }}
       </form.Field>
 
       <form.Field name="language">
@@ -110,7 +128,7 @@ export function OpenSourceForm({ defaultValues, onSubmit, isPending }: OpenSourc
           <div className="flex flex-col gap-2">
             <Label htmlFor={field.name} className={fieldLabelClass}>
               {t.projectForm.language}{" "}
-              <span className="normal-case tracking-normal text-muted-foreground/50">
+              <span className="ml-1 font-normal text-muted-foreground">
                 {t.projectForm.optional}
               </span>
             </Label>
@@ -119,19 +137,21 @@ export function OpenSourceForm({ defaultValues, onSubmit, isPending }: OpenSourc
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
               placeholder="TypeScript"
-              className={inputClass}
             />
           </div>
         )}
       </form.Field>
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="mt-2 w-full rounded-sm bg-primary py-2.5 font-mono text-xs font-bold uppercase tracking-widest text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
-      >
-        {isPending ? t.action.saving : t.action.save}
-      </button>
+      <div className="mt-2 flex justify-end gap-2 border-t border-border pt-4">
+        {onCancel ? (
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isPending}>
+            {t.action.cancel}
+          </Button>
+        ) : null}
+        <Button type="submit" disabled={isPending}>
+          {isPending ? t.action.saving : t.action.save}
+        </Button>
+      </div>
     </form>
   )
 }

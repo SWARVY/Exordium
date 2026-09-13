@@ -1,7 +1,6 @@
 import { openSourceKeys } from "@entities/open-source/api/open-source-keys"
-import { openSourceQueryOptions } from "@entities/open-source/api/open-source-query-options"
-import { useT } from "@shared/i18n"
 import { supabase } from "@shared/api/supabase-client"
+import { useT } from "@shared/i18n"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
@@ -58,14 +57,20 @@ async function updateOpenSource({ id, form }: { id: string; form: OpenSourceForm
 }
 
 async function deleteOpenSource(id: string) {
-  const { error } = await supabase.from("open_source").delete().eq("id", id)
+  const { data, error } = await supabase
+    .from("open_source")
+    .delete()
+    .eq("id", id)
+    .select("id")
+    .maybeSingle()
   if (error) throw error
+  if (!data || data.id !== id) throw new Error("The project could not be deleted.")
 }
 
 async function reorderOpenSource(items: { id: string; order: number }[]) {
-  await Promise.all(
-    items.map(({ id, order }) => supabase.from("open_source").update({ order }).eq("id", id)),
-  )
+  const projectIds = [...items].sort((a, b) => a.order - b.order).map(({ id }) => id)
+  const { error } = await supabase.rpc("reorder_open_source", { project_ids: projectIds })
+  if (error) throw error
 }
 
 export function useCreateOpenSource() {
@@ -80,6 +85,7 @@ export function useCreateOpenSource() {
       queryClient.setQueryData<OpenSource[]>(listKey(), (prev) =>
         [...(prev ?? []), mapRow(row)].sort((a, b) => a.order - b.order),
       )
+      queryClient.invalidateQueries({ queryKey: openSourceKeys.searches() })
       toast.success(t.toast.projectAdded)
     },
     onError: () => {
@@ -98,6 +104,7 @@ export function useUpdateOpenSource() {
       queryClient.setQueryData<OpenSource[]>(listKey(), (prev) =>
         (prev ?? []).map((item) => (item.id === row.id ? mapRow(row) : item)),
       )
+      queryClient.invalidateQueries({ queryKey: openSourceKeys.searches() })
       toast.success(t.toast.projectUpdated)
     },
     onError: () => {
@@ -120,6 +127,7 @@ export function useDeleteOpenSource() {
       return { snapshot }
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: openSourceKeys.searches() })
       toast.success(t.toast.projectDeleted)
     },
     onError: (_err, _id, ctx) => {
@@ -133,8 +141,30 @@ export function useReorderOpenSource() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: reorderOpenSource,
-    onError: () => {
-      queryClient.invalidateQueries({ queryKey: openSourceQueryOptions.list().queryKey })
+    onMutate: async (items) => {
+      await queryClient.cancelQueries({ queryKey: listKey() })
+      const snapshot = queryClient.getQueryData<OpenSource[]>(listKey())
+      const orderById = new Map(items.map(({ id, order }) => [id, order]))
+      queryClient.setQueryData<OpenSource[]>(listKey(), (current) =>
+        (current ?? [])
+          .map((item) => ({ ...item, order: orderById.get(item.id) ?? item.order }))
+          .sort((a, b) => a.order - b.order),
+      )
+      return { snapshot }
+    },
+    onError: (_error, _items, context) => {
+      if (context?.snapshot) {
+        const previousOrder = new Map(context.snapshot.map((item) => [item.id, item.order]))
+        queryClient.setQueryData<OpenSource[]>(listKey(), (current) =>
+          (current ?? [])
+            .map((item) => ({
+              ...item,
+              order: previousOrder.get(item.id) ?? item.order,
+            }))
+            .sort((a, b) => a.order - b.order),
+        )
+      }
+      queryClient.invalidateQueries({ queryKey: listKey() })
     },
   })
 }

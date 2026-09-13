@@ -79,6 +79,8 @@ supabase/migrations/001_schema.sql
 supabase/seed.sql
 ```
 
+Apply `supabase/migrations/20260911084300_atomic_open_source_ordering.sql` to existing databases to enable atomic project ordering. New projects must also apply it after the initial schema. Merging a PR does not automatically apply database migrations.
+
 #### 4. Configure GitHub OAuth
 
 Supabase Dashboard → Authentication → URL Configuration:
