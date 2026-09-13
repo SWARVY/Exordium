@@ -1,6 +1,7 @@
 import { CommentForm } from "@features/create-comment/ui/comment-form"
 import { useT } from "@shared/i18n"
 import { AuthContext } from "@shared/ui/providers/auth-provider"
+import { LockKeyholeIcon } from "lucide-react"
 import { useContext } from "react"
 
 import { CommentList } from "./comment-list"
@@ -16,13 +17,11 @@ export function CommentSection({ postId }: CommentSectionProps) {
   return (
     <section
       aria-label={t.comment.label}
-      className="mt-12 flex flex-col gap-8 border-t border-border pt-10"
+      className="mt-8 flex flex-col gap-4 border-t border-border pt-6"
     >
       {/* Header */}
       <div className="flex items-center gap-2">
-        <span className="font-mono text-xs font-semibold uppercase tracking-widest text-primary">
-          {t.comment.header}
-        </span>
+        <h2 className="type-section text-foreground">{t.comment.label}</h2>
       </div>
 
       {/* 댓글 작성 폼 */}
@@ -30,8 +29,8 @@ export function CommentSection({ postId }: CommentSectionProps) {
         <CommentForm postId={postId} />
       ) : (
         <div className="flex items-center gap-3 rounded-sm border border-dashed border-border px-4 py-3">
-          <span className="text-base">🔒</span>
-          <p className="font-mono text-xs text-muted-foreground">{t.comment.loginRequired}</p>
+          <LockKeyholeIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+          <p className="type-summary text-muted-foreground">{t.comment.loginRequired}</p>
         </div>
       )}
 

@@ -1,6 +1,7 @@
 import { commentKeys } from "@entities/comment/api/comment-keys"
-import { useT } from "@shared/i18n"
 import { supabase } from "@shared/api/supabase-client"
+import { useT } from "@shared/i18n"
+import { fieldErrorMessage } from "@shared/lib/field-error"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
@@ -45,8 +46,8 @@ export function useCreateComment(postId: string) {
       queryClient.invalidateQueries({ queryKey: commentKeys.byPost(postId) })
       toast.success(t.toast.commentPosted)
     },
-    onError: () => {
-      toast.error(t.toast.error)
+    onError: (error) => {
+      toast.error(fieldErrorMessage([error]) ?? t.toast.error)
     },
   })
 }

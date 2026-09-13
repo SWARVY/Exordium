@@ -24,7 +24,7 @@ function buildSummary(
 export const reactionQueryOptions = {
   byPost: (postId: string, currentUserId?: string) =>
     queryOptions({
-      queryKey: reactionKeys.byPost(postId),
+      queryKey: reactionKeys.byPost(postId, currentUserId),
       queryFn: async () => {
         const { data, error } = await supabase
           .from("post_reactions")
@@ -37,7 +37,7 @@ export const reactionQueryOptions = {
 
   byComment: (commentId: string, currentUserId?: string) =>
     queryOptions({
-      queryKey: reactionKeys.byComment(commentId),
+      queryKey: reactionKeys.byComment(commentId, currentUserId),
       queryFn: async () => {
         const { data, error } = await supabase
           .from("comment_reactions")

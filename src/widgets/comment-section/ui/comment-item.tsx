@@ -1,15 +1,14 @@
-import { reactionQueryOptions } from "@entities/reaction"
 import { UserAvatar } from "@entities/user"
 import { CommentForm } from "@features/create-comment/ui/comment-form"
-import { useDeleteComment } from "@features/delete-comment"
-import { useToggleCommentReaction } from "@features/toggle-reaction"
+import { DeleteCommentButton } from "@features/delete-comment"
+import { useIsOwner } from "@shared/hooks/use-is-owner"
 import { useT } from "@shared/i18n"
 import { formatShortDate } from "@shared/lib/utils"
-import { ReactionPopover } from "@shared/ui/components/reaction-popover"
+import { Button } from "@shared/ui/components/button"
 import { AuthContext } from "@shared/ui/providers/auth-provider"
-import { useQuery } from "@tanstack/react-query"
 import { useState, useContext } from "react"
 
+import { CommentReactions } from "./comment-reactions"
 import { ReplyItem } from "./reply-item"
 
 import type { Comment } from "@entities/comment"
@@ -23,14 +22,11 @@ interface CommentItemProps {
 export function CommentItem({ comment, replies, postId }: CommentItemProps) {
   const { session } = useContext(AuthContext)
   const userId = session?.user?.id
-  const { mutate: deleteComment, isPending } = useDeleteComment(postId)
+  const isOwner = useIsOwner()
   const [isReplying, setIsReplying] = useState(false)
 
-  const { data: reactionSummary } = useQuery(reactionQueryOptions.byComment(comment.id, userId))
-  const { mutate: toggleReaction } = useToggleCommentReaction(comment.id, userId)
-
   const t = useT()
-  const canDelete = userId === comment.authorId
+  const canDelete = userId === comment.authorId || isOwner
 
   const timeLabel = formatShortDate(comment.createdAt)
 
@@ -43,50 +39,38 @@ export function CommentItem({ comment, replies, postId }: CommentItemProps) {
           name={comment.authorName}
           size="sm"
         />
-        <div className="flex flex-1 flex-col gap-2">
-          <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="text-sm font-semibold text-foreground">{comment.authorName}</span>
-            <time
-              dateTime={comment.createdAt}
-              className="font-mono text-[10px] text-muted-foreground"
-            >
+            <time dateTime={comment.createdAt} className="font-mono text-xs text-muted-foreground">
               {timeLabel}
             </time>
           </div>
-          <p className="text-sm leading-relaxed text-foreground">{comment.content}</p>
+          <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">
+            {comment.content}
+          </p>
 
-          {reactionSummary && (
-            <ReactionPopover
-              summary={reactionSummary}
-              onToggle={
-                userId
-                  ? (emoji) => toggleReaction({ emoji, reacted: reactionSummary[emoji].reacted })
-                  : undefined
-              }
-              disabled={!userId}
-              size="sm"
-            />
-          )}
-
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-1">
+            <CommentReactions commentId={comment.id} userId={userId} />
             {session && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
+                aria-expanded={isReplying}
                 onClick={() => setIsReplying((v) => !v)}
-                className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
+                className="min-w-11 text-muted-foreground"
               >
                 {isReplying ? t.action.cancel : t.action.reply}
-              </button>
+              </Button>
             )}
             {canDelete && (
-              <button
-                type="button"
-                onClick={() => deleteComment(comment.id)}
-                disabled={isPending}
-                className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-colors hover:text-destructive disabled:opacity-50"
-              >
-                {t.action.delete}
-              </button>
+              <DeleteCommentButton
+                commentId={comment.id}
+                postId={postId}
+                kind="comment"
+                replyCount={replies.length}
+              />
             )}
           </div>
         </div>
