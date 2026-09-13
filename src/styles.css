@@ -1,12 +1,14 @@
-@import "./styles/reactions.css";
-@import "./styles/editor.css";
-@import "./styles/content.css";
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@jikjo/ui-kit/styles.css";
 @import "@jikjo/image/styles.css";
+@import "lenis/dist/lenis.css";
+@import "./styles/content.css";
+@import "./styles/editor.css";
+@import "./styles/reactions.css";
 @import "./styles/typography.css";
+@import "./styles/navigation-motion.css";
 
 @custom-variant dark (&:is(.dark, .dark *));
 
