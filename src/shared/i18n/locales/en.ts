@@ -1,12 +1,20 @@
 import type { Translations } from "./ko"
 
 export const en: Translations = {
+  authFlow: {
+    checking: "Checking sign-in",
+    failed: "Sign-in could not be completed. Please try again.",
+    retry: "Try signing in again",
+    logoutFailed: "Sign-out failed. Please try again.",
+  },
+
   nav: {
     home: "Home",
     posts: "Posts",
     projects: "Projects",
   },
   action: {
+    close: "Close",
     login: "Login",
     logout: "Logout",
     save: "Save",
@@ -46,11 +54,36 @@ export const en: Translations = {
     emojiEmpty: "No emoji found",
   },
   reaction: {
+    count: (count: number) => `${count} reactions`,
     label: "Reactions",
     loginRequired: "Sign in to react",
     addReaction: "Add reaction",
   },
+  community: {
+    commentsLoadFailed: "Could not load comments. Check your connection and try again.",
+    reactionsLoadFailed: "Could not load reactions. Please try again.",
+    reactionSaveFailed: "Could not save your reaction. Please try again.",
+    deleteComment: "Delete comment",
+    deleteReply: "Delete reply",
+    commentDeleteTitle: "Delete comment",
+    replyDeleteTitle: "Delete reply",
+    commentDeleteConfirm: (replyCount: number) =>
+      replyCount > 0
+        ? `This comment and its ${replyCount} replies will be deleted. This cannot be undone.`
+        : "This comment will be deleted and cannot be restored.",
+    replyDeleteConfirm: "This reply will be deleted and cannot be restored.",
+    commentDeleteFailed: "Could not delete the comment. Please try again.",
+    subtitleInput: "Subtitle",
+  },
   post: {
+    tags: "Tags",
+    viewTag: (tag: string) => `View posts tagged ${tag}`,
+    tagFilter: "Tag filter",
+    clearTagFilter: "Clear filter",
+    noTaggedPosts: "No posts with this tag.",
+    noTaggedPostsDesc: "Clear the filter to see all posts.",
+    showAllTags: (count: number) => `View all ${count} tags`,
+    contentUnavailable: "This article could not be displayed. Please try again later.",
     noPostsYet: "// no posts yet",
     noPostsDesc: "No posts have been written yet.",
     readingTime: (min: number) => `${min} min read`,
@@ -84,6 +117,14 @@ export const en: Translations = {
     errorSub: "An unexpected error occurred. Please try again later.",
   },
   profile: {
+    editTitle: "Edit profile",
+    basicInfo: "Basic information",
+    links: "Links",
+    avatarDropLabel: "Upload profile image",
+    avatarDropHint: "Click to choose or drop an image",
+    avatarDropActive: "Drop your image here",
+    skillsHint: "Drag or use the up and down buttons to change display order.",
+
     editProfile: "Edit Profile",
     avatar: "Profile Image",
     avatarAlt: "avatar preview",
@@ -91,12 +132,40 @@ export const en: Translations = {
     name: "Name",
     bio: "Bio",
     skills: "Skills",
-    skillsPlaceholder: "React, TypeScript... (press Enter to add)",
+    skillsPlaceholder: "e.g. TypeScript",
     githubUrl: "GitHub URL",
     twitterUrl: "Twitter URL",
     websiteUrl: "Website URL",
     urlPlaceholder: "https://...",
     removeSkill: (skill: string) => `Remove ${skill}`,
+  },
+  management: {
+    avatarOneFile: "Choose one image at a time.",
+    avatarInvalidType: "Upload a JPEG, PNG, or WebP image.",
+    avatarTooLarge: "The profile image must be 2MB or smaller.",
+    avatarUploading: "Uploading the new image to a safe staging path.",
+    avatarUploadFailed: "The image could not be uploaded. Your current image is unchanged.",
+    avatarReady: "The new image is ready. Save to publish it on your profile.",
+    avatarCleanupFailed: "The staged image could not be removed. Try cancelling again.",
+    profileSaveFailed: "The profile could not be saved. Your input and public image are unchanged.",
+    profileEditorLoading: "Loading the profile editor.",
+    projectOrderSaving: "Saving the project order.",
+    projectOrderSaved: "Project order saved.",
+    projectOrderFailed: "The project order could not be saved, so the previous order was restored.",
+    projectMoveUp: (name: string) => `Move ${name} earlier`,
+    projectMoveDown: (name: string) => `Move ${name} later`,
+    projectDrag: (name: string) => `Drag to reorder ${name}`,
+    projectDeleteTitle: (name: string) => `Delete ${name}`,
+    projectDeleteConfirm:
+      "Deleted projects cannot be recovered. Are you sure you want to delete it?",
+    projectMoved: (name: string, position: number, total: number) =>
+      `Moved ${name} to position ${position} of ${total}.`,
+    skillInputLabel: "Skill to add",
+    skillMoveUp: (skill: string) => `Move ${skill} earlier`,
+    skillMoveDown: (skill: string) => `Move ${skill} later`,
+    skillDrag: (skill: string) => `Drag to reorder ${skill}`,
+    skillMoved: (skill: string, position: number, total: number) =>
+      `Moved ${skill} to position ${position} of ${total}. Save to apply this order.`,
   },
   form: {
     confirm: "Confirm",
@@ -129,6 +198,41 @@ export const en: Translations = {
     tipFormat: "Select text to apply formatting",
     draftSaving: (time: string) => `Draft saved ${time}`,
   },
+  editing: {
+    contentLabel: "Content",
+    additionalSettings: "Additional settings",
+    actionsLabel: "Post editing actions",
+    coverImageLabel: "Cover image URL",
+    coverImagePlaceholder: "https://...",
+    tagsLabel: "Tags",
+    tagsPlaceholder: "react, typescript",
+    tagsHint: "Separate tags with commas",
+    legacyDraftDescription:
+      "This draft was saved by an older version in this browser. Restore it only if it is your own work.",
+    restoreTitle: "Restore draft",
+    restoreDescription: (time: string) => `Restore the draft saved at ${time}?`,
+    restoreAction: "Restore",
+    discardDraft: "Discard draft",
+    corruptTitle: "This draft cannot be read",
+    corruptDescription:
+      "A damaged local draft is blocking saves to protect the published article. Discard it to continue.",
+    discardCorruptDraft: "Discard damaged draft",
+    storageUnavailable: "Browser draft storage is unavailable.",
+    draftSaveFailed: "The draft could not be saved. Your input remains on this page.",
+    documentLoadFailed:
+      "The article body could not be loaded, so saving is blocked. The published article is unchanged.",
+    contentRequired: "Enter the article body.",
+    documentInvalid: "The article body has an invalid format and cannot be saved.",
+    updateConflict:
+      "This article was updated elsewhere. Reload the latest version, then apply your changes again.",
+    useOriginalDocument: "Discard draft and use published content",
+    saveFailed: "The post could not be saved. Check your input and try again.",
+    exitTitle: "Leave the editor?",
+    exitDescription: "Save your changes as a draft or discard them before leaving.",
+    keepDraftAndExit: "Save draft and leave",
+    discardAndExit: "Discard and leave",
+    continueEditing: "Keep editing",
+  },
   asyncBoundary: {
     errorMessage: "Failed to load data.",
   },
@@ -145,6 +249,8 @@ export const en: Translations = {
     error: "Something went wrong. Please try again.",
   },
   search: {
+    failed: "Could not load search results. Check your connection and try again.",
+    resultCount: (count: number) => `${count} search results`,
     placeholder: "Search posts, projects...",
     label: "Search",
     noResults: "No results found.",
