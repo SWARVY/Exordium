@@ -39,7 +39,7 @@ export function useTogglePostReaction(postId: string, userId: string | undefined
       return togglePostReaction({ postId, emoji, userId, reacted })
     },
     onMutate: async ({ emoji, reacted }) => {
-      const queryKey = reactionKeys.byPost(postId)
+      const queryKey = reactionKeys.byPost(postId, userId)
       await queryClient.cancelQueries({ queryKey })
       const prev = queryClient.getQueryData<ReactionSummary>(queryKey)
       queryClient.setQueryData<ReactionSummary>(queryKey, (old) => {
@@ -47,18 +47,18 @@ export function useTogglePostReaction(postId: string, userId: string | undefined
         return {
           ...old,
           [emoji]: {
-            count: reacted ? old[emoji].count - 1 : old[emoji].count + 1,
+            count: reacted ? Math.max(0, old[emoji].count - 1) : old[emoji].count + 1,
             reacted: !reacted,
           },
         }
       })
-      return { prev }
+      return { prev, queryKey, targetKey: reactionKeys.post(postId) }
     },
     onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) queryClient.setQueryData(reactionKeys.byPost(postId), ctx.prev)
+      if (ctx?.prev) queryClient.setQueryData(ctx.queryKey, ctx.prev)
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: reactionKeys.byPost(postId) })
+    onSettled: (_data, _error, _variables, ctx) => {
+      if (ctx) queryClient.invalidateQueries({ queryKey: ctx.targetKey })
     },
   })
 }
@@ -98,7 +98,7 @@ export function useToggleCommentReaction(commentId: string, userId: string | und
       return toggleCommentReaction({ commentId, emoji, userId, reacted })
     },
     onMutate: async ({ emoji, reacted }) => {
-      const queryKey = reactionKeys.byComment(commentId)
+      const queryKey = reactionKeys.byComment(commentId, userId)
       await queryClient.cancelQueries({ queryKey })
       const prev = queryClient.getQueryData<ReactionSummary>(queryKey)
       queryClient.setQueryData<ReactionSummary>(queryKey, (old) => {
@@ -106,18 +106,18 @@ export function useToggleCommentReaction(commentId: string, userId: string | und
         return {
           ...old,
           [emoji]: {
-            count: reacted ? old[emoji].count - 1 : old[emoji].count + 1,
+            count: reacted ? Math.max(0, old[emoji].count - 1) : old[emoji].count + 1,
             reacted: !reacted,
           },
         }
       })
-      return { prev }
+      return { prev, queryKey, targetKey: reactionKeys.comment(commentId) }
     },
     onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) queryClient.setQueryData(reactionKeys.byComment(commentId), ctx.prev)
+      if (ctx?.prev) queryClient.setQueryData(ctx.queryKey, ctx.prev)
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: reactionKeys.byComment(commentId) })
+    onSettled: (_data, _error, _variables, ctx) => {
+      if (ctx) queryClient.invalidateQueries({ queryKey: ctx.targetKey })
     },
   })
 }

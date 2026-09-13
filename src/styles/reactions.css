@@ -1,0 +1,56 @@
+/* The chip is visually compact; its parent keeps the full 44px hit area. */
+.reaction-chip {
+  display: inline-flex;
+  min-height: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding-inline: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: 0.125rem;
+  background-color: var(--card);
+  color: var(--muted-foreground);
+}
+
+.reaction-trigger:where(:not([data-disabled]):not(:disabled):hover) .reaction-chip {
+  border-color: var(--input);
+  color: var(--foreground);
+}
+
+.reaction-trigger[data-pressed] .reaction-chip {
+  border-color: var(--primary-ink);
+  background-color: var(--accent);
+  color: var(--foreground);
+}
+
+/* ─── Frimousse emoji picker ─── */
+[frimousse-category-header] {
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+  height: 28px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+  background: var(--card);
+}
+
+[frimousse-emoji] {
+  flex: 1;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-size: 1.125rem;
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+[frimousse-emoji]:hover,
+[frimousse-emoji][data-active] {
+  background-color: var(--accent);
+}
