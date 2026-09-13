@@ -1,0 +1,104 @@
+/* ─── jikjo Editor: global CSS variable overrides ─── */
+:root {
+  /* Active 버튼(B/I/H1 등) 배경 — 기본값 #ffffff26은 라이트 테마에서 어두워 보임 */
+  --jikjo-btn-bg-active: var(--primary);
+  --jikjo-btn-text-active: var(--primary-foreground);
+  /* 툴바 구분선 */
+  --jikjo-toolbar-border: var(--border);
+  /* 버튼 텍스트 */
+  --jikjo-btn-text: var(--muted-foreground);
+  --jikjo-btn-bg-hover: var(--accent);
+  --jikjo-btn-text-hover: var(--foreground);
+  /* 버블 / 슬래시 메뉴 */
+  --jikjo-menu-bg: var(--popover);
+  --jikjo-menu-shadow: rgba(0, 0, 0, 0.1);
+  --jikjo-menu-divider: var(--border);
+  --jikjo-menu-item-text: var(--muted-foreground);
+  --jikjo-menu-item-text-active: var(--foreground);
+  --jikjo-menu-item-bg-active: var(--accent);
+  --jikjo-accent: var(--primary);
+
+  /* ─── @jikjo/image: 이미지 업로드 다이얼로그 ─── */
+  --jikjo-dialog-bg: var(--card);
+  --jikjo-dialog-border: var(--border);
+  --jikjo-dialog-shadow: rgba(0, 0, 0, 0.12);
+  --jikjo-dialog-text: var(--foreground);
+  --jikjo-dialog-overlay-bg: rgba(0, 0, 0, 0.5);
+  /* 드롭존 */
+  --jikjo-dropzone-border: var(--border);
+  --jikjo-dropzone-border-hover: var(--muted-foreground);
+  --jikjo-dropzone-border-active: var(--primary);
+  --jikjo-dropzone-bg-hover: var(--accent);
+  --jikjo-dropzone-bg-active: color-mix(in srgb, var(--primary) 8%, transparent);
+  /* 파일 아이콘 */
+  --jikjo-file-icon-color: var(--muted-foreground);
+  --jikjo-file-icon-color-active: var(--primary);
+  /* 에러 */
+  --jikjo-error-color: var(--destructive);
+  /* 프리뷰 박스 */
+  --jikjo-preview-bg: var(--muted);
+  --jikjo-preview-border: var(--border);
+  --jikjo-preview-overlay-bg: color-mix(in srgb, var(--background) 70%, transparent);
+  /* 이미지 선택 아웃라인 */
+  --jikjo-image-outline: var(--primary);
+  --jikjo-image-caption-color: var(--muted-foreground);
+  /* 이미지 정렬 툴바 */
+  --jikjo-align-bg: var(--popover);
+  --jikjo-align-border: var(--border);
+  --jikjo-align-shadow: rgba(0, 0, 0, 0.08);
+  --jikjo-align-btn-text: var(--muted-foreground);
+  --jikjo-align-btn-text-active: var(--primary-foreground);
+  --jikjo-align-btn-bg-active: var(--primary);
+  /* 리사이즈 핸들 */
+  --jikjo-resize-handle-bg: var(--card);
+  --jikjo-resize-handle-border: var(--border);
+  --jikjo-resize-handle-shadow: rgba(0, 0, 0, 0.1);
+  /* 업로드 배지 accent */
+  --jikjo-accent-text: var(--primary-ink);
+}
+
+/* 툴바 배경 — .jikjo-toolbar에 background가 없으므로 직접 지정 */
+.jikjo-toolbar {
+  background-color: var(--card);
+  border-bottom-color: var(--border) !important;
+}
+
+/* bubble menu: match popover bg + border */
+.jikjo-bubble-menu {
+  background: var(--popover) !important;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    0 0 0 1px var(--border) !important;
+  border-radius: var(--radius-xs) !important;
+}
+
+/* slash/block menu panel */
+.jikjo-menu-panel {
+  background: var(--popover) !important;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.1),
+    0 0 0 1px var(--border) !important;
+  border-radius: var(--radius-xs) !important;
+}
+
+.jikjo-toolbar {
+  flex-wrap: wrap;
+}
+.jikjo-toolbar button {
+  min-width: 44px;
+  min-height: 44px;
+}
+.jikjo-bubble-menu,
+.jikjo-menu-panel {
+  max-width: calc(100vw - 2rem);
+}
+
+.post-editor-wrap .jikjo-placeholder {
+  font-size: 0.875rem !important;
+  line-height: 1.625 !important;
+  color: var(--muted-foreground) !important;
+}
+
+.post-editor-wrap [contenteditable="true"] {
+  outline: none;
+}

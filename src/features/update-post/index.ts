@@ -1,1 +1,1 @@
-export { useUpdatePost } from "./api/update-post-mutation"
+export { PostUpdateConflictError, useUpdatePost } from "./api/update-post-mutation"

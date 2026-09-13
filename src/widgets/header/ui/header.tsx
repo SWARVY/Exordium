@@ -57,6 +57,7 @@ export function Header() {
         </div>
       </header>
       <SearchOverlay
+        returnFocus={searchTriggerRef}
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
       />

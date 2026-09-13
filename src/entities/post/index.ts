@@ -1,5 +1,6 @@
-export type { Post, PostDraft } from "./model/post-schema"
+export type { Post, PostSummary, PostDraft } from "./model/post-schema"
 export { PostSchema, PostDraftSchema } from "./model/post-schema"
 export { postKeys } from "./api/post-keys"
 export { postQueryOptions } from "./api/post-query-options"
 export { PostBadge } from "./ui/post-badge"
+export { PostTags } from "./ui/post-tags"

@@ -7,7 +7,7 @@ export function PostDetailSkeleton() {
     <div aria-label={t.aria.postLoading}>
       {/* ── Hero header ── */}
       <div className="grid-paper border-b border-border">
-        <div className="mx-auto max-w-3xl px-6 py-12">
+        <div className="reading-shell reading-space">
           {/* Tags */}
           <div className="mb-4 flex gap-1.5">
             <Skeleton className="h-5 w-14 rounded-full" />
@@ -31,7 +31,7 @@ export function PostDetailSkeleton() {
       </div>
 
       {/* ── Content ── */}
-      <div className="mx-auto max-w-3xl px-6 py-12">
+      <div className="reading-shell reading-space">
         <div className="flex flex-col gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-4 w-full" />

@@ -14,8 +14,8 @@ export const PostSchema = v.object({
 })
 
 export const PostDraftSchema = v.object({
-  title: v.pipe(v.string(), v.minLength(1, "제목을 입력하세요")),
-  description: v.pipe(v.string(), v.minLength(1, "요약을 입력하세요")),
+  title: v.pipe(v.string(), v.trim(), v.minLength(1, "제목을 입력하세요")),
+  description: v.pipe(v.string(), v.trim(), v.minLength(1, "요약을 입력하세요")),
   content: v.string(),
   coverImage: v.string(),
   tags: v.array(v.string()),
@@ -27,4 +27,5 @@ export const PostDraftSchema = v.object({
 })
 
 export type Post = v.InferOutput<typeof PostSchema>
+export type PostSummary = Omit<Post, "content">
 export type PostDraft = v.InferOutput<typeof PostDraftSchema>
