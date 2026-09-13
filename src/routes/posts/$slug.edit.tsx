@@ -1,21 +1,14 @@
 import { postQueryOptions } from "@entities/post"
-import { supabase } from "@shared/api/supabase-client"
-import { routes } from "@shared/constants/routes"
+import { requireOwner } from "@features/auth/api/require-owner"
 import { buildMeta } from "@shared/constants/seo"
 import { Skeleton } from "@shared/ui/components/skeleton"
 import { useSuspenseQuery } from "@suspensive/react-query-5"
-import { createFileRoute, redirect } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
 import { PostEditorForm } from "@widgets/post-editor"
 import { Suspense } from "react"
 
 export const Route = createFileRoute("/posts/$slug/edit")({
-  beforeLoad: async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    const isOwner = session?.user?.app_metadata?.role === "owner"
-    if (!isOwner) throw redirect({ to: routes.home, replace: true })
-  },
+  beforeLoad: requireOwner,
   head: ({ params }) => ({
     meta: buildMeta({
       title: "게시글 수정",

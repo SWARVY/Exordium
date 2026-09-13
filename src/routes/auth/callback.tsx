@@ -1,49 +1,54 @@
+import { LoginButton } from "@features/auth"
 import { supabase } from "@shared/api/supabase-client"
 import { routes } from "@shared/constants/routes"
 import { useT } from "@shared/i18n"
-import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { useEffect } from "react"
+import { createFileRoute, Link } from "@tanstack/react-router"
+import { useEffect, useState } from "react"
 
-export const Route = createFileRoute("/auth/callback")({
-  component: AuthCallbackPage,
-})
+export const Route = createFileRoute("/auth/callback")({ component: AuthCallbackPage })
 
 function AuthCallbackPage() {
-  const navigate = useNavigate()
   const t = useT()
+  const [failed, setFailed] = useState(false)
 
   useEffect(() => {
-    supabase.auth.exchangeCodeForSession(window.location.search).then(() => {
-      navigate({ to: routes.home, replace: true })
+    let active = true
+    const complete = async () => {
+      if (new URLSearchParams(window.location.search).has("error"))
+        throw new Error("OAuth cancelled")
+      // The browser client performs the PKCE exchange during initialization.
+      const { data, error } = await supabase.auth.getSession()
+      if (error || !data.session) throw new Error("No authenticated session")
+      const verified = await supabase.auth.getUser()
+      if (verified.error || !verified.data.user) throw new Error("Session verification failed")
+      if (active) window.location.replace(routes.home)
+    }
+    void complete().catch(() => {
+      if (active) setFailed(true)
     })
-  }, [navigate])
+    return () => {
+      active = false
+    }
+  }, [])
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center gap-8">
-      {/* Animated logo mark */}
-      <div className="relative flex items-center justify-center">
-        <div className="absolute size-20 animate-ping rounded-full bg-primary/10" />
-        <div className="relative flex size-14 items-center justify-center rounded-full border border-primary/30 bg-primary/5">
-          <span className="font-mono text-xs font-bold uppercase tracking-widest text-primary">
-            Ex
-          </span>
+    <section className="mx-auto flex min-h-[60vh] max-w-xl flex-col justify-center gap-6 px-6 py-16">
+      <h1 className="text-3xl font-bold">{failed ? t.authFlow.failed : t.authFlow.checking}</h1>
+      {failed ? (
+        <div className="flex flex-col gap-5">
+          <p role="alert" className="text-destructive">
+            {t.authFlow.failed}
+          </p>
+          <div className="flex items-center gap-4">
+            <LoginButton />
+            <Link to={routes.home} className="underline underline-offset-4">
+              {t.nav.home}
+            </Link>
+          </div>
         </div>
-      </div>
-
-      {/* Status text */}
-      <div className="flex flex-col items-center gap-2">
-        <p className="font-mono text-xs font-semibold uppercase tracking-widest text-primary">
-          — Authenticating
-        </p>
-        <p className="font-mono text-sm text-muted-foreground">
-          {t.action.login}
-          <span className="inline-flex gap-0.5 ml-0.5">
-            <span className="animate-bounce [animation-delay:0ms]">.</span>
-            <span className="animate-bounce [animation-delay:150ms]">.</span>
-            <span className="animate-bounce [animation-delay:300ms]">.</span>
-          </span>
-        </p>
-      </div>
-    </div>
+      ) : (
+        <p role="status">{t.action.loading}</p>
+      )}
+    </section>
   )
 }
