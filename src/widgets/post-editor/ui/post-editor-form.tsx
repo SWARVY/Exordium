@@ -1,294 +1,481 @@
 import { PostDraftSchema, type Post, type PostDraft } from "@entities/post"
 import { useCreatePost } from "@features/create-post"
-import { useUpdatePost } from "@features/update-post"
-import { historyExtension, richTextExtension, type Extension } from "@jikjo/core"
-import { createImageExtension } from "@jikjo/image"
-import { EditorUI } from "@jikjo/ui-kit"
-import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin"
-import { postImageUploadAdapter } from "@shared/api/image-upload-adapter"
+import { PostUpdateConflictError, useUpdatePost } from "@features/update-post"
 import { routes } from "@shared/constants/routes"
+import { useAuth } from "@shared/hooks/use-auth"
+import { useHydrated } from "@shared/hooks/use-hydrated"
 import { useT } from "@shared/i18n"
+import { Button } from "@shared/ui/components/button"
+import { FieldError } from "@shared/ui/components/field-error"
 import { Input } from "@shared/ui/components/input"
 import { Label } from "@shared/ui/components/label"
+import { Textarea } from "@shared/ui/components/textarea"
 import { useForm } from "@tanstack/react-form"
 import { useNavigate } from "@tanstack/react-router"
-import { BookOpenIcon, ClockIcon, TagIcon } from "lucide-react"
-import { createElement, useCallback, useEffect, useMemo, useState } from "react"
+import { AlertTriangleIcon, ClockIcon } from "lucide-react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
-import { useDraftAutoSave } from "../model/use-draft-auto-save"
-
-import type { EditorState } from "lexical"
-
-const baseExtensions: Extension[] = [
-  richTextExtension,
-  historyExtension,
-  createImageExtension({ uploadAdapter: postImageUploadAdapter }),
-]
+import { validatePostDocument, type PostDocumentValidation } from "../model/post-document"
+import { type StoredPostDraft } from "../model/use-draft-auto-save"
+import { usePostEditorDraftWorkflow } from "../model/use-post-editor-draft-workflow"
+import { PostDocumentEditor } from "./post-document-editor"
+import { PostEditorActions } from "./post-editor-actions"
+import { PostEditorAdditionalSettings } from "./post-editor-additional-settings"
+import { PostEditorDraftDialogs } from "./post-editor-draft-dialogs"
 
 interface PostEditorFormProps {
   post?: Post
+  onCancel?: () => void
+  onSaved?: () => void
 }
 
-export function PostEditorForm({ post }: PostEditorFormProps) {
+function initialValues(post?: Post): PostDraft {
+  return {
+    title: post?.title ?? "",
+    description: post?.description ?? "",
+    content: post?.content ?? "",
+    slug: post?.slug ?? "",
+    coverImage: post?.coverImage ?? "",
+    tags: post?.tags ?? [],
+  }
+}
+
+function formatSavedTime(savedAt: string) {
+  return new Date(savedAt).toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+}
+
+export function PostEditorForm({ post, onCancel, onSaved }: PostEditorFormProps) {
   const t = useT()
+  const hydrated = useHydrated()
+  const { user, isLoading: authLoading } = useAuth()
+  const draftOwnerRef = useRef(user?.id)
+  if (!draftOwnerRef.current && user?.id) draftOwnerRef.current = user.id
   const navigate = useNavigate()
-  const { mutate: createPost, isPending: isCreating } = useCreatePost()
-  const { mutate: updatePost, isPending: isUpdating } = useUpdatePost()
-  const isPending = isCreating || isUpdating
-
-  const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null)
-
+  const createMutation = useCreatePost()
+  const updateMutation = useUpdatePost()
   const isEditMode = Boolean(post)
+  const isPending = createMutation.isPending || updateMutation.isPending
+  const saveFailed = createMutation.isError || updateMutation.isError
+  const updateConflict = updateMutation.error instanceof PostUpdateConflictError
+  const interactiveReady =
+    hydrated && !authLoading && Boolean(user) && user?.id === draftOwnerRef.current
+  const original = initialValues(post)
+
+  const [documentValue, setDocumentValue] = useState(original.content)
+  const [tagsText, setTagsText] = useState(original.tags.join(", "))
+  const [documentRevision, setDocumentRevision] = useState(0)
+  const [documentLoadFailed, setDocumentLoadFailed] = useState(false)
+  const [documentValidation, setDocumentValidation] = useState<PostDocumentValidation | null>(null)
+  const [editBaseline, setEditBaseline] = useState(post?.updatedAt)
+  const [draftVersionConflict, setDraftVersionConflict] = useState(false)
+  const [additionalSettingsOpen, setAdditionalSettingsOpen] = useState(false)
+  const [invalidFocusRequest, setInvalidFocusRequest] = useState(0)
+  const formElementRef = useRef<HTMLFormElement>(null)
+
+  useEffect(() => {
+    if (invalidFocusRequest === 0) return
+    formElementRef.current
+      ?.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+        'input[aria-invalid="true"], textarea[aria-invalid="true"]',
+      )
+      ?.focus()
+  }, [invalidFocusRequest])
+
+  const leaveEditor = useCallback(() => {
+    if (onCancel) {
+      onCancel()
+      return
+    }
+    history.back()
+  }, [onCancel])
 
   const form = useForm({
     formId: isEditMode ? `post-editor-${post?.id}` : "post-editor-new",
-    defaultValues: {
-      title: post?.title ?? "",
-      description: post?.description ?? "",
-      content: post?.content ?? "",
-      slug: post?.slug ?? "",
-      coverImage: post?.coverImage ?? "",
-      tags: post?.tags ?? [],
-    },
+    defaultValues: original,
     validators: { onSubmit: PostDraftSchema },
+    onSubmitInvalid: () => {
+      setAdditionalSettingsOpen(true)
+      setInvalidFocusRequest((request) => request + 1)
+    },
     onSubmit: ({ value }) => {
-      if (isEditMode && post) {
-        updatePost(
-          { id: post.id, draft: value as PostDraft },
-          { onSuccess: (data) => navigate({ to: routes.posts.detail(data.slug) }) },
-        )
-      } else {
-        createPost(value as PostDraft, {
-          onSuccess: (data) => {
-            clearDraft()
-            navigate({ to: routes.posts.detail(data.slug) })
-          },
-        })
+      if (isPending || !interactiveReady) return
+      const validation = validatePostDocument(value.content)
+      setDocumentValidation(validation)
+      if (
+        validation !== "valid" ||
+        documentLoadFailed ||
+        draftVersionConflict ||
+        draftWorkflow.draftDecision.status === "ready" ||
+        draftWorkflow.draftDecision.status === "corrupt"
+      ) {
+        return
       }
+      if (isEditMode && post) {
+        updateMutation.mutate(
+          {
+            id: post.id,
+            draft: value as PostDraft,
+            updatedAt: editBaseline ?? post.updatedAt,
+            previousSlug: post.slug,
+          },
+          { onSuccess: (data) => finishSave(data.slug) },
+        )
+        return
+      }
+      createMutation.mutate(value as PostDraft, {
+        onSuccess: (data) => finishSave(data.slug),
+      })
     },
   })
 
-  const handleEditorChange = useCallback(
-    (editorState: EditorState) => {
-      form.setFieldValue("content", JSON.stringify(editorState.toJSON()))
-    },
-    [form],
-  )
-
-  const extensions = useMemo<Extension[]>(
-    () => [
-      ...baseExtensions,
-      {
-        name: "on-change",
-        plugins: [createElement(OnChangePlugin, { onChange: handleEditorChange })],
-      },
-    ],
-    [handleEditorChange],
-  )
-
-  const { saveDraft, loadDraft, clearDraft } = useDraftAutoSave(() => form.state.values, post?.id)
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: load draft only on mount
-  useEffect(() => {
-    if (!isEditMode) {
-      const draft = loadDraft()
-      if (draft) {
-        if (draft.title) form.setFieldValue("title", draft.title)
-        if (draft.description) form.setFieldValue("description", draft.description)
-        if (draft.content) form.setFieldValue("content", draft.content)
-        if (draft.slug) form.setFieldValue("slug", draft.slug)
-        if (draft.savedAt) setDraftSavedAt(draft.savedAt)
-      }
-    }
-  }, [])
-
-  const handleManualSave = () => {
-    saveDraft()
-    setDraftSavedAt(new Date().toISOString())
+  const replaceEditorDocument = (content: string) => {
+    form.setFieldValue("content", content)
+    setDocumentValue(content)
+    setDocumentRevision((revision) => revision + 1)
+    setDocumentLoadFailed(false)
+    setDocumentValidation(null)
   }
 
-  const draftTimeLabel = draftSavedAt
-    ? new Date(draftSavedAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })
+  const applyDraft = (draft: StoredPostDraft) => {
+    form.setFieldValue("title", draft.title ?? original.title)
+    form.setFieldValue("description", draft.description ?? original.description)
+    form.setFieldValue("slug", draft.slug ?? original.slug)
+    form.setFieldValue("coverImage", draft.coverImage ?? original.coverImage)
+    form.setFieldValue("tags", draft.tags ?? original.tags)
+    setTagsText((draft.tags ?? original.tags).join(", "))
+    if (post) {
+      setEditBaseline(draft.baseUpdatedAt ?? "")
+      setDraftVersionConflict(draft.baseUpdatedAt !== post.updatedAt)
+    }
+    replaceEditorDocument(draft.content ?? original.content)
+  }
+
+  const applyOriginal = () => {
+    form.setFieldValue("title", original.title)
+    form.setFieldValue("description", original.description)
+    form.setFieldValue("slug", original.slug)
+    form.setFieldValue("coverImage", original.coverImage)
+    form.setFieldValue("tags", original.tags)
+    setTagsText(original.tags.join(", "))
+    setEditBaseline(post?.updatedAt)
+    setDraftVersionConflict(false)
+    replaceEditorDocument(original.content)
+  }
+
+  const draftWorkflow = usePostEditorDraftWorkflow({
+    getValue: () => ({
+      ...form.state.values,
+      ...(post ? { baseUpdatedAt: editBaseline } : {}),
+    }),
+    postId: post?.id,
+    ownerId: draftOwnerRef.current,
+    identityReady: interactiveReady,
+    persistenceAllowed: !documentLoadFailed,
+    applyDraft,
+    applyOriginal,
+    onLeave: leaveEditor,
+  })
+  const markDirty = draftWorkflow.markDirty
+  const clearDraftAfterSave = draftWorkflow.finishSave
+
+  const handleEditorChange = useCallback(
+    (content: string) => {
+      form.setFieldValue("content", content)
+      setDocumentValidation(null)
+      markDirty()
+    },
+    [form, markDirty],
+  )
+
+  const finishSave = useCallback(
+    (slug: string) => {
+      clearDraftAfterSave()
+      if (onSaved && slug === post?.slug) {
+        onSaved()
+        return
+      }
+      navigate({ to: routes.posts.detail(slug) })
+    },
+    [clearDraftAfterSave, navigate, onSaved, post?.slug],
+  )
+
+  const draftTimeLabel = draftWorkflow.draftSavedAt
+    ? formatSavedTime(draftWorkflow.draftSavedAt)
     : null
+  const submitDisabled =
+    isPending || draftWorkflow.draftDecisionBlocksSave || documentLoadFailed || draftVersionConflict
+  const documentValidationMessage =
+    documentValidation === "empty"
+      ? t.editing.contentRequired
+      : documentValidation === "invalid"
+        ? t.editing.documentInvalid
+        : null
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault()
-        form.handleSubmit()
-      }}
-      className="flex flex-col gap-0"
-    >
-      {/* ── Hero header ── */}
-      <div className="grid-paper border-b border-border">
-        <div className="mx-auto max-w-5xl px-6 py-12">
-          <span className="font-mono text-xs font-semibold uppercase tracking-widest text-primary">
-            — {isEditMode ? t.postEditor.editPost : t.postEditor.newPost}
-          </span>
-          <div className="mt-3 flex items-end justify-between gap-4">
-            <h1 className="text-4xl font-black tracking-tight text-foreground sm:text-5xl">
-              {isEditMode ? t.postEditor.editPost : t.postEditor.newPost}
-            </h1>
-            {draftTimeLabel && (
-              <div className="hidden sm:flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
-                <ClockIcon className="size-3" />
-                {t.postEditor.draftSaving(draftTimeLabel)}
+    <>
+      <form
+        ref={formElementRef}
+        onSubmit={(event) => {
+          event.preventDefault()
+          form.handleSubmit()
+        }}
+        className="flex flex-col gap-0 pb-44 sm:pb-28"
+      >
+        <fieldset disabled={!interactiveReady || isPending} className="contents">
+          <div className="grid-paper border-b border-border">
+            <div className="page-shell py-6 sm:py-8">
+              <div className="flex items-center justify-between gap-4">
+                <h1 className="form-heading text-foreground">
+                  {isEditMode ? t.postEditor.editPost : t.postEditor.newPost}
+                </h1>
+                {draftTimeLabel ? (
+                  <div className="hidden items-center gap-1.5 font-mono text-xs text-muted-foreground sm:flex">
+                    <ClockIcon className="size-3" />
+                    {t.postEditor.draftSaving(draftTimeLabel)}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          <div className="page-shell py-6 sm:py-8">
+            {(draftWorkflow.draftMessage ||
+              saveFailed ||
+              documentLoadFailed ||
+              draftVersionConflict ||
+              documentValidationMessage) && (
+              <div
+                id="post-editor-error"
+                role="alert"
+                className="mb-6 flex items-start gap-3 border border-destructive bg-card p-4 text-sm text-destructive"
+              >
+                <AlertTriangleIcon className="mt-0.5 size-4 shrink-0" />
+                <div className="flex flex-col items-start gap-3">
+                  <span>
+                    {documentLoadFailed
+                      ? t.editing.documentLoadFailed
+                      : documentValidationMessage
+                        ? documentValidationMessage
+                        : draftVersionConflict || updateConflict
+                          ? t.editing.updateConflict
+                          : saveFailed
+                            ? t.editing.saveFailed
+                            : draftWorkflow.draftMessage}
+                  </span>
+                  {(documentLoadFailed || draftVersionConflict) && draftWorkflow.restoredDraft ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={draftWorkflow.recoverOriginalDocument}
+                    >
+                      {t.editing.useOriginalDocument}
+                    </Button>
+                  ) : null}
+                </div>
               </div>
             )}
+
+            <div className="grid gap-5 lg:gap-x-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
+              <form.Field name="title">
+                {(field) => {
+                  const errorId = `${field.name}-error`
+                  const invalid = field.state.meta.errors.length > 0
+                  return (
+                    <div className="flex flex-col gap-1.5 lg:col-start-1 lg:row-start-1">
+                      <Label htmlFor={field.name} className="form-label">
+                        {t.postEditor.titleLabel}
+                      </Label>
+                      <Input
+                        id={field.name}
+                        value={field.state.value}
+                        onChange={(event) => {
+                          field.handleChange(event.target.value)
+                          markDirty()
+                        }}
+                        onBlur={field.handleBlur}
+                        placeholder={t.postEditor.titlePlaceholder}
+                        aria-invalid={invalid}
+                        aria-describedby={invalid ? errorId : undefined}
+                        className="font-semibold placeholder:font-normal"
+                      />
+                      <FieldError errors={field.state.meta.errors} id={errorId} />
+                    </div>
+                  )
+                }}
+              </form.Field>
+              <div className="flex min-w-0 flex-col gap-3 lg:col-start-1 lg:row-start-2">
+                <span className="form-label">{t.editing.contentLabel}</span>
+                <div
+                  className="post-editor-wrap rounded-xs border border-input bg-card focus-within:border-primary-ink"
+                  aria-invalid={documentLoadFailed || Boolean(documentValidationMessage)}
+                  aria-describedby={
+                    documentLoadFailed || documentValidationMessage
+                      ? "post-editor-error"
+                      : undefined
+                  }
+                >
+                  {interactiveReady ? (
+                    <PostDocumentEditor
+                      key={documentRevision}
+                      initialDocument={documentValue}
+                      namespace={`post-editor-${post?.id ?? "new"}-${documentRevision}`}
+                      label={t.editing.contentLabel}
+                      editable={!isPending}
+                      onChange={handleEditorChange}
+                      onLoadError={() => setDocumentLoadFailed(true)}
+                    />
+                  ) : (
+                    <div aria-hidden="true" className="min-h-[360px] sm:min-h-[560px]" />
+                  )}
+                </div>
+              </div>
+              <PostEditorAdditionalSettings
+                label={t.editing.additionalSettings}
+                open={additionalSettingsOpen}
+                onOpenChange={setAdditionalSettingsOpen}
+                tips={[t.postEditor.tipSlug, t.postEditor.tipSlashBlock, t.postEditor.tipFormat]}
+              >
+                <form.Field name="slug">
+                  {(field) => {
+                    const errorId = `${field.name}-error`
+                    const invalid = field.state.meta.errors.length > 0
+                    return (
+                      <div className="flex flex-col gap-1.5">
+                        <Label htmlFor={field.name} className="form-label">
+                          {t.postEditor.slugLabel}
+                        </Label>
+                        <Input
+                          id={field.name}
+                          value={field.state.value}
+                          onChange={(event) => {
+                            field.handleChange(event.target.value)
+                            markDirty()
+                          }}
+                          onBlur={field.handleBlur}
+                          placeholder="my-post-title"
+                          aria-invalid={invalid}
+                          aria-describedby={invalid ? errorId : undefined}
+                          className="font-mono"
+                        />
+                        <FieldError errors={field.state.meta.errors} id={errorId} />
+                      </div>
+                    )
+                  }}
+                </form.Field>
+
+                <form.Field name="description">
+                  {(field) => {
+                    const errorId = `${field.name}-error`
+                    const invalid = field.state.meta.errors.length > 0
+                    return (
+                      <div className="flex flex-col gap-1.5">
+                        <Label htmlFor={field.name} className="form-label">
+                          {t.postEditor.descLabel}
+                        </Label>
+                        <Textarea
+                          id={field.name}
+                          value={field.state.value}
+                          onChange={(event) => {
+                            field.handleChange(event.target.value)
+                            markDirty()
+                          }}
+                          onBlur={field.handleBlur}
+                          rows={4}
+                          placeholder={t.postEditor.descPlaceholder}
+                          aria-invalid={invalid}
+                          aria-describedby={invalid ? errorId : undefined}
+                          className="resize-none"
+                        />
+                        <FieldError errors={field.state.meta.errors} id={errorId} />
+                      </div>
+                    )
+                  }}
+                </form.Field>
+
+                <form.Field name="coverImage">
+                  {(field) => (
+                    <div className="flex flex-col gap-1.5">
+                      <Label htmlFor={field.name} className="form-label">
+                        {t.editing.coverImageLabel}
+                      </Label>
+                      <Input
+                        id={field.name}
+                        type="url"
+                        value={field.state.value}
+                        onChange={(event) => {
+                          field.handleChange(event.target.value)
+                          markDirty()
+                        }}
+                        placeholder={t.editing.coverImagePlaceholder}
+                        className="font-mono"
+                      />
+                    </div>
+                  )}
+                </form.Field>
+
+                <form.Field name="tags">
+                  {(field) => (
+                    <div className="flex flex-col gap-1.5">
+                      <Label htmlFor={field.name} className="form-label">
+                        {t.editing.tagsLabel}
+                      </Label>
+                      <Input
+                        id={field.name}
+                        value={tagsText}
+                        onChange={(event) => {
+                          setTagsText(event.target.value)
+                          field.handleChange(
+                            event.target.value
+                              .split(",")
+                              .map((tag) => tag.trim())
+                              .filter(Boolean),
+                          )
+                          markDirty()
+                        }}
+                        placeholder={t.editing.tagsPlaceholder}
+                        aria-describedby="tags-hint"
+                        className="font-mono"
+                      />
+                      <p id="tags-hint" className="font-mono text-xs text-muted-foreground">
+                        {t.editing.tagsHint}
+                      </p>
+                    </div>
+                  )}
+                </form.Field>
+              </PostEditorAdditionalSettings>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* ── Two-column layout ── */}
-      <div className="mx-auto w-full max-w-5xl px-6 py-10">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-8">
-          {/* Left: meta sidebar */}
-          <aside className="flex flex-col gap-6 lg:w-64 lg:shrink-0">
-            <div className="flex items-center gap-2 border-b border-border pb-3">
-              <TagIcon className="size-3 text-primary" />
-              <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-primary">
-                Metadata
-              </span>
-            </div>
+          <PostEditorActions
+            draftLabel={draftTimeLabel ? t.action.draftSaved(draftTimeLabel) : t.action.draftSave}
+            submitLabel={
+              isPending ? t.action.saving : isEditMode ? t.action.done : t.action.publish
+            }
+            draftDisabled={
+              draftWorkflow.draftDecision.status === "checking" ||
+              draftWorkflow.draftDecision.status === "ready" ||
+              draftWorkflow.draftDecision.status === "corrupt" ||
+              documentLoadFailed
+            }
+            submitDisabled={submitDisabled}
+            onSaveDraft={draftWorkflow.saveManually}
+            onCancel={draftWorkflow.requestExit}
+          />
+        </fieldset>
+      </form>
 
-            <form.Field name="title">
-              {(field) => (
-                <div className="flex flex-col gap-1.5">
-                  <Label
-                    htmlFor={field.name}
-                    className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground"
-                  >
-                    {t.postEditor.titleLabel}
-                  </Label>
-                  <Input
-                    id={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder={t.postEditor.titlePlaceholder}
-                    className="rounded-sm border-border bg-card text-sm font-semibold placeholder:font-normal placeholder:text-muted-foreground/50 focus-visible:border-primary focus-visible:ring-primary/20"
-                  />
-                  {field.state.meta.errors[0] && (
-                    <p className="font-mono text-[10px] text-destructive">
-                      {String(field.state.meta.errors[0])}
-                    </p>
-                  )}
-                </div>
-              )}
-            </form.Field>
-
-            <form.Field name="slug">
-              {(field) => (
-                <div className="flex flex-col gap-1.5">
-                  <Label
-                    htmlFor={field.name}
-                    className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground"
-                  >
-                    {t.postEditor.slugLabel}
-                  </Label>
-                  <Input
-                    id={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="my-post-title"
-                    className="rounded-sm border-border bg-card font-mono text-xs focus-visible:border-primary focus-visible:ring-primary/20"
-                  />
-                  {field.state.meta.errors[0] && (
-                    <p className="font-mono text-[10px] text-destructive">
-                      {String(field.state.meta.errors[0])}
-                    </p>
-                  )}
-                </div>
-              )}
-            </form.Field>
-
-            <form.Field name="description">
-              {(field) => (
-                <div className="flex flex-col gap-1.5">
-                  <Label
-                    htmlFor={field.name}
-                    className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground"
-                  >
-                    {t.postEditor.descLabel}
-                  </Label>
-                  <textarea
-                    id={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    rows={4}
-                    placeholder={t.postEditor.descPlaceholder}
-                    className="w-full resize-none rounded-sm border border-border bg-card px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground/40 transition-[border-color,box-shadow] focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/20"
-                  />
-                  {field.state.meta.errors[0] && (
-                    <p className="font-mono text-[10px] text-destructive">
-                      {String(field.state.meta.errors[0])}
-                    </p>
-                  )}
-                </div>
-              )}
-            </form.Field>
-
-            <div className="border-t border-dashed border-border" />
-
-            <div className="rounded-sm border border-border bg-card p-4">
-              <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-primary mb-3">
-                // Tips
-              </p>
-              <ul className="flex flex-col gap-2">
-                {[t.postEditor.tipSlug, t.postEditor.tipSlashBlock, t.postEditor.tipFormat].map(
-                  (tip) => (
-                    <li
-                      key={tip}
-                      className="flex items-start gap-1.5 font-mono text-[10px] leading-relaxed text-muted-foreground"
-                    >
-                      <span className="mt-px shrink-0 text-primary">›</span>
-                      {tip}
-                    </li>
-                  ),
-                )}
-              </ul>
-            </div>
-          </aside>
-
-          {/* Right: editor */}
-          <div className="flex flex-1 flex-col gap-3 min-w-0">
-            <div className="flex items-center gap-2 border-b border-border pb-3">
-              <BookOpenIcon className="size-3 text-primary" />
-              <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-primary">
-                Content
-              </span>
-            </div>
-
-            <div className="post-editor-wrap rounded-sm border border-border bg-card shadow-sm">
-              <EditorUI extensions={extensions} namespace="post-editor" className="min-h-[560px]" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Fixed FAB actions ── */}
-      <div className="fixed bottom-20 right-4 z-50 flex flex-col items-end gap-2 sm:bottom-8 sm:right-8">
-        <button
-          type="button"
-          onClick={handleManualSave}
-          className="rounded-full border border-border bg-background/95 px-4 py-2.5 shadow-md backdrop-blur-sm font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary hover:text-primary"
-        >
-          {draftTimeLabel ? t.action.draftSaved(draftTimeLabel) : t.action.draftSave}
-        </button>
-        <button
-          type="button"
-          onClick={() => history.back()}
-          className="rounded-full border border-border bg-background/95 px-4 py-2.5 shadow-md backdrop-blur-sm font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
-        >
-          {t.action.cancel}
-        </button>
-        <button
-          type="submit"
-          disabled={isPending}
-          className="rounded-full bg-primary px-5 py-3 shadow-lg shadow-primary/30 font-mono text-xs font-bold uppercase tracking-wider text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
-        >
-          {isPending ? t.action.saving : isEditMode ? t.action.done : t.action.publish}
-        </button>
-      </div>
-    </form>
+      <PostEditorDraftDialogs
+        draftDecision={draftWorkflow.draftDecision}
+        exitDialogOpen={draftWorkflow.exitDialogOpen}
+        onDiscardPendingDraft={draftWorkflow.discardPendingDraft}
+        onRestoreDraft={draftWorkflow.restoreDraft}
+        onCloseExit={draftWorkflow.closeExitDialog}
+        onDiscardAndExit={draftWorkflow.discardAndExit}
+        onKeepDraftAndExit={draftWorkflow.keepDraftAndExit}
+      />
+    </>
   )
 }

@@ -23,7 +23,7 @@ export function DeletePostButton({ postId, onSuccess }: DeletePostButtonProps) {
           type="button"
           disabled={isPending}
           aria-label={t.aria.deletePost}
-          className="rounded-sm border border-border px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-destructive hover:text-destructive disabled:opacity-50"
+          className="min-h-11 rounded-xs border border-border px-3 py-1 font-mono text-sm font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-destructive hover:text-destructive disabled:opacity-50"
         >
           {isPending ? t.action.deleting : t.action.delete}
         </button>

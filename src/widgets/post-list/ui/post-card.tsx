@@ -1,13 +1,14 @@
+import { PostTags } from "@entities/post"
 import { routes } from "@shared/constants/routes"
 import { formatDate } from "@shared/lib/utils"
 import { Link } from "@tanstack/react-router"
 import { ArrowUpRightIcon } from "lucide-react"
 import { motion } from "motion/react"
 
-import type { Post } from "@entities/post"
+import type { PostSummary } from "@entities/post"
 
 interface PostCardProps {
-  post: Post
+  post: PostSummary
   index?: number
 }
 
@@ -16,51 +17,41 @@ export function PostCard({ post, index = 0 }: PostCardProps) {
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 8 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
+      className="post-card group relative isolate rounded-xs border border-border bg-card transition-[color,background-color,border-color,box-shadow] duration-200 has-[.post-card-link:hover]:border-primary"
     >
-      <Link
-        to={routes.posts.detail(post.slug)}
-        aria-label={post.title}
-        className="group flex h-full flex-col gap-4 rounded-sm border border-border bg-card p-6 transition-all duration-200 hover:border-primary hover:shadow-[4px_4px_0_0_var(--color-primary)]"
-      >
-        {/* Tags */}
-        {post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {post.tags.map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full border border-border px-2.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Title */}
-        <div className="flex-1">
-          <h2 className="text-lg font-bold leading-snug text-foreground transition-colors group-hover:text-primary">
+      <div className="min-w-0 flex-1">
+        <h2 className="type-card-title line-clamp-2 text-foreground transition-colors has-[a:hover]:text-primary-ink">
+          <Link
+            to={routes.posts.detail(post.slug)}
+            aria-label={post.title}
+            className="post-card-link after:absolute after:inset-0 after:rounded-xs focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4 focus-visible:after:outline-primary-ink"
+          >
             {post.title}
-          </h2>
-          {post.description && (
-            <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-              {post.description}
-            </p>
-          )}
+          </Link>
+        </h2>
+        {post.description && (
+          <p className="type-summary mt-2 line-clamp-2 text-muted-foreground">{post.description}</p>
+        )}
+      </div>
+      {post.tags.length > 0 && (
+        <div className="min-w-0 shrink-0">
+          <PostTags tags={post.tags} />
         </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between">
-          {publishedDate && (
-            <time dateTime={post.publishedAt!} className="font-mono text-xs text-muted-foreground">
-              {publishedDate}
-            </time>
-          )}
-          <ArrowUpRightIcon className="size-4 text-muted-foreground transition-all group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 ml-auto" />
-        </div>
-      </Link>
+      )}
+      <div className="flex h-4 shrink-0 items-center justify-between">
+        {publishedDate && (
+          <time dateTime={post.publishedAt!} className="type-meta font-mono text-muted-foreground">
+            {publishedDate}
+          </time>
+        )}
+        <ArrowUpRightIcon
+          aria-hidden="true"
+          className="ml-auto size-4 text-muted-foreground transition-all group-has-[.post-card-link:hover]:translate-x-0.5 group-has-[.post-card-link:hover]:-translate-y-0.5 group-has-[.post-card-link:hover]:text-primary-ink"
+        />
+      </div>
     </motion.article>
   )
 }

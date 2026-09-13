@@ -1,4 +1,5 @@
 import { supabase } from "@shared/api/supabase-client"
+import { textSearchFilter } from "@shared/lib/text-search-filter"
 import { queryOptions } from "@tanstack/react-query"
 
 import { openSourceKeys } from "./open-source-keys"
@@ -40,7 +41,7 @@ export const openSourceQueryOptions = {
         const { data, error } = await supabase
           .from("open_source")
           .select("*")
-          .or(`name.ilike.%${q}%,description.ilike.%${q}%`)
+          .or(textSearchFilter(["name", "description"], q))
           .order("order", { ascending: true })
           .limit(20)
         if (error) throw error

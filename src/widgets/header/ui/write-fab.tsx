@@ -4,22 +4,13 @@ import { useT } from "@shared/i18n"
 import { useIsWriteActionEditing } from "@shared/ui/providers/write-action-provider"
 import { Link } from "@tanstack/react-router"
 import { PencilIcon } from "lucide-react"
-import { useEffect, useState } from "react"
 
 export function WriteFab() {
   const isOwner = useIsOwner()
   const t = useT()
   const isEditing = useIsWriteActionEditing()
-  const [legacyEditing, setLegacyEditing] = useState(false)
-  useEffect(() => {
-    const update = () => setLegacyEditing(document.body.hasAttribute("data-inline-editing"))
-    update()
-    const observer = new MutationObserver(update)
-    observer.observe(document.body, { attributes: true, attributeFilter: ["data-inline-editing"] })
-    return () => observer.disconnect()
-  }, [])
 
-  if (!isOwner || isEditing || legacyEditing) return null
+  if (!isOwner || isEditing) return null
 
   return (
     <Link

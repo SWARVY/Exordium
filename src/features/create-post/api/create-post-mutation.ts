@@ -1,6 +1,6 @@
 import { postKeys } from "@entities/post/api/post-keys"
-import { useT } from "@shared/i18n"
 import { supabase } from "@shared/api/supabase-client"
+import { useT } from "@shared/i18n"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
@@ -31,6 +31,7 @@ export function useCreatePost() {
     mutationFn: createPost,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: postKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: postKeys.searches() })
       toast.success(t.toast.postPublished)
     },
     onError: () => {
