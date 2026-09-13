@@ -5,7 +5,7 @@ import { ErrorPage } from "@shared/ui/components/error-page/error-page"
 import { NotFoundPage } from "@shared/ui/components/error-page/not-found-page"
 import { AuthProvider } from "@shared/ui/providers/auth-provider"
 import { ThemeProvider, useThemeContext } from "@shared/ui/providers/theme-provider"
-import { Toaster } from "sonner"
+import { WriteActionProvider } from "@shared/ui/providers/write-action-provider"
 import { TanStackDevtools } from "@tanstack/react-devtools"
 import { type QueryClient } from "@tanstack/react-query"
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools"
@@ -19,6 +19,8 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { Footer } from "@widgets/footer"
 import { BottomNav, Header, WriteFab } from "@widgets/header"
+import { MotionConfig } from "motion/react"
+import { Toaster } from "sonner"
 
 import appCss from "../styles.css?url"
 
@@ -57,13 +59,15 @@ function SonnerToaster() {
   return (
     <Toaster
       theme={mode}
-      position="bottom-right"
+      position="top-right"
+      offset={80}
+      mobileOffset={{ top: 80, left: 16, right: 16 }}
       toastOptions={{
         unstyled: true,
         classNames: {
           toast: [
-            "flex w-[356px] items-center gap-3",
-            "rounded-sm border border-border bg-card shadow-xl",
+            "flex w-[min(356px,calc(100vw-2rem))] items-center gap-3",
+            "rounded-xs border border-input bg-card",
             "px-4 py-3",
           ].join(" "),
           icon: "shrink-0 flex items-center justify-center size-4 text-muted-foreground",
@@ -101,29 +105,33 @@ function RootLayout() {
     <AuthProvider>
       <LocaleProvider>
         <ThemeProvider>
-          <SonnerToaster />
-          <div className="flex min-h-screen flex-col bg-background text-foreground">
-            <Header />
-            <main className="flex-1">
-              <Outlet />
-            </main>
-            <Footer />
-            <div className="h-16 sm:hidden" aria-hidden="true" />
-            <BottomNav />
-            {!isEditorPage && <WriteFab />}
-          </div>
-          {import.meta.env.DEV && (
-            <TanStackDevtools
-              config={{ position: "bottom-right" }}
-              plugins={[
-                {
-                  name: "TanStack Router",
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-                { name: "TanStack Query", render: <ReactQueryDevtoolsPanel /> },
-              ]}
-            />
-          )}
+          <WriteActionProvider>
+            <MotionConfig reducedMotion="user">
+              <SonnerToaster />
+              <div className="flex min-h-screen flex-col bg-background text-foreground">
+                <Header />
+                <main className="flex-1">
+                  <Outlet />
+                </main>
+                <Footer />
+                <div className="h-16 sm:hidden" aria-hidden="true" />
+                <BottomNav />
+                {!isEditorPage && <WriteFab />}
+              </div>
+              {import.meta.env.DEV && (
+                <TanStackDevtools
+                  config={{ position: "bottom-left" }}
+                  plugins={[
+                    {
+                      name: "TanStack Router",
+                      render: <TanStackRouterDevtoolsPanel />,
+                    },
+                    { name: "TanStack Query", render: <ReactQueryDevtoolsPanel /> },
+                  ]}
+                />
+              )}
+            </MotionConfig>
+          </WriteActionProvider>
         </ThemeProvider>
       </LocaleProvider>
     </AuthProvider>

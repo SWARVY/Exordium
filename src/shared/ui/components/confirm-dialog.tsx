@@ -2,13 +2,13 @@ import { useT } from "@shared/i18n"
 import { AlertTriangleIcon, TrashIcon } from "lucide-react"
 import { useState } from "react"
 
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./dialog"
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "./dialog"
 
-import type { ReactNode } from "react"
+import type { ReactElement } from "react"
 
 interface ConfirmDialogProps {
   /** 다이얼로그를 여는 트리거 요소 */
-  trigger: ReactNode
+  trigger: ReactElement
   title: string
   description?: string
   /** 확인 버튼 레이블 (기본값: "확인") */
@@ -47,14 +47,9 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <span onClick={() => setOpen(true)} style={{ display: "contents" }}>
-        {trigger}
-      </span>
+      <DialogTrigger render={trigger} />
 
-      <DialogContent
-        showCloseButton={false}
-        className="max-w-xs rounded-sm border-border bg-card p-0 shadow-xl"
-      >
+      <DialogContent showCloseButton={false} className="max-w-xs sm:max-w-xs bg-card p-0">
         {/* Icon + header */}
         <div className="flex flex-col items-center gap-4 px-6 pb-2 pt-8 text-center">
           <div
@@ -67,7 +62,7 @@ export function ConfirmDialog({
             {isDestructive ? (
               <TrashIcon className="size-5 text-destructive" />
             ) : (
-              <AlertTriangleIcon className="size-5 text-primary" />
+              <AlertTriangleIcon className="size-5 text-primary-ink" />
             )}
           </div>
 
@@ -76,7 +71,7 @@ export function ConfirmDialog({
               {title}
             </DialogTitle>
             {description && (
-              <DialogDescription className="text-xs leading-relaxed text-muted-foreground">
+              <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
                 {description}
               </DialogDescription>
             )}
@@ -91,7 +86,7 @@ export function ConfirmDialog({
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="flex-1 rounded-sm border border-border bg-background px-4 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground/40 hover:bg-muted hover:text-foreground"
+            className="min-h-11 flex-1 rounded-xs border border-border bg-background px-4 py-2 font-mono text-sm font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground/40 hover:bg-muted hover:text-foreground"
           >
             {resolvedCancelLabel}
           </button>
@@ -101,8 +96,8 @@ export function ConfirmDialog({
             disabled={isPending}
             className={
               isDestructive
-                ? "flex-1 rounded-sm border border-destructive bg-destructive px-4 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-destructive-foreground transition-colors hover:bg-destructive/80 disabled:opacity-50"
-                : "flex-1 rounded-sm border border-primary bg-primary px-4 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/80 disabled:opacity-50"
+                ? "min-h-11 flex-1 rounded-xs border border-destructive bg-destructive px-4 py-2 font-mono text-sm font-medium uppercase tracking-wider text-destructive-foreground transition-colors hover:bg-destructive/80 disabled:opacity-50"
+                : "min-h-11 flex-1 rounded-xs border border-primary bg-primary px-4 py-2 font-mono text-sm font-medium uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/80 disabled:opacity-50"
             }
           >
             {isPending ? t.form.processing : resolvedConfirmLabel}

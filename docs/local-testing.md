@@ -77,4 +77,4 @@ Vitest는 `src/**/*.test.{ts,tsx}`의 단위·통합 검사를 담당하고, Pla
 - 캡처와 DOM 좌표가 다르면 테스트의 입력·스크롤 동작부터 진단한다. 기대값을 낮추거나 강제 스크롤을 넣어 통과시키지 않는다.
 - 테마의 `primary`는 기존 면색, `primaryInk`는 작은 강조 글자, `primaryDisplay`는 큰 이름에 사용한다. 텍스트 보정은 원래 OKLCH의 색상·채도를 유지하고 필요한 명도만 조정한다. `e2e/theme-consistency.spec.ts`는 기존 면색의 고정 기대값과 실제 렌더링 대비를 함께 검사한다.
 - 디자인 전후 캡처는 데이터·팔레트·모드·viewport를 맞춘다. 페이지 URL과 제목을 확인하고, 최종 화면 증거는 hydration과 관련 비동기 영역의 완료까지 기다린다. SSR 초기 상태를 비교했다면 그 범위를 명시한다. 캡처 파일명만으로 페이지 종류나 완료 상태를 판단하지 않는다.
-- 카드 높이·두 줄 말줄임·태그 팝오버는 `e2e/post-card-layout.spec.ts`가 실제 렌더링과 키보드·클릭 동작으로 검증한다. 레이아웃을 대신하는 jsdom 너비 mock이나 클래스 문자열 검사는 추가하지 않는다. `bun run test:e2e e2e/post-card-layout.spec.ts`로 해당 범위만 실행할 수 있다.
+- 카드 높이·두 줄 말줄임·태그 팝오버는 `e2e/post-card-layout.spec.ts`가 실제 렌더링과 키보드·클릭 동작으로 검증한다. 레이아웃을 대신하는 jsdom 너비 mock이나 클래스 문자열 검사는 추가하지 않는다. `bun run test:e2e e2e/post-card-layout.spec.ts`로 해당 범위만 실행할 수 있다. 글자·간격의 역할과 예외는 [디자인 기준](design-system.md)에 둔다.

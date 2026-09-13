@@ -1,15 +1,17 @@
 import { useTheme } from "@features/change-theme"
 import { COLOR_PALETTES } from "@shared/constants/themes"
+import { useHydrated } from "@shared/hooks/use-hydrated"
 import { useLocale, useT } from "@shared/i18n"
-import { cn } from "@shared/lib/utils"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuPositioner,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from "@shared/ui/components/dropdown-menu"
-import { CheckIcon, MoonIcon, SunIcon } from "lucide-react"
+import { MoonIcon, SunIcon } from "lucide-react"
 
 import type { Locale } from "@shared/i18n"
 
@@ -23,21 +25,27 @@ export function ThemeSelector() {
   const { mode, paletteId, setMode, setPaletteId } = useTheme()
   const { locale, setLocale } = useLocale()
   const t = useT()
+  const hydrated = useHydrated()
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="flex size-8 items-center justify-center rounded-sm border border-transparent text-muted-foreground transition-colors hover:border-border hover:text-foreground focus-visible:outline-none"
+        disabled={!hydrated}
+        className="flex size-11 shrink-0 items-center justify-center rounded-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
         aria-label={t.theme.change}
       >
-        {mode === "dark" ? <MoonIcon className="size-3.5" /> : <SunIcon className="size-3.5" />}
+        {mode === "dark" ? (
+          <MoonIcon className="size-4" aria-hidden="true" />
+        ) : (
+          <SunIcon className="size-4" aria-hidden="true" />
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuPositioner>
         <DropdownMenuContent>
           {/* Mode toggle */}
           <DropdownMenuItem
             onClick={() => setMode(mode === "dark" ? "light" : "dark")}
-            className="gap-2.5"
+            className="min-h-[44px] gap-2.5"
           >
             {mode === "dark" ? (
               <SunIcon className="size-3 text-muted-foreground" />
@@ -51,49 +59,59 @@ export function ThemeSelector() {
           <div className="my-1 -mx-1 h-px bg-border" />
 
           {/* Palette section label */}
-          <p className="px-2.5 py-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground/60">
+          <p className="px-2.5 py-1 font-mono text-xs uppercase tracking-widest text-muted-foreground">
             {t.theme.color}
           </p>
 
           {/* Palettes */}
-          {COLOR_PALETTES.map((palette) => (
-            <DropdownMenuItem
-              key={palette.id}
-              onClick={() => setPaletteId(palette.id)}
-              className={cn("gap-2.5", paletteId === palette.id && "text-foreground")}
-            >
-              <span
-                className="size-3 shrink-0 rounded-full"
-                style={{ backgroundColor: palette.primary }}
-                aria-hidden="true"
-              />
-              {palette.name}
-              {paletteId === palette.id && <CheckIcon className="ml-auto size-3 text-foreground" />}
-            </DropdownMenuItem>
-          ))}
+          <DropdownMenuRadioGroup
+            value={paletteId}
+            onValueChange={setPaletteId}
+            aria-label={t.theme.color}
+          >
+            {COLOR_PALETTES.map((palette) => (
+              <DropdownMenuRadioItem
+                key={palette.id}
+                value={palette.id}
+                className="min-h-[44px] gap-2.5 font-mono text-sm"
+              >
+                <span
+                  className="size-3 shrink-0 rounded-full"
+                  style={{ backgroundColor: palette.primary }}
+                  aria-hidden="true"
+                />
+                {palette.name}
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
 
           {/* Divider */}
           <div className="my-1 -mx-1 h-px bg-border" />
 
           {/* Language section label */}
-          <p className="px-2.5 py-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground/60">
+          <p className="px-2.5 py-1 font-mono text-xs uppercase tracking-widest text-muted-foreground">
             {t.theme.language}
           </p>
 
           {/* Languages */}
-          {LOCALES.map((loc) => (
-            <DropdownMenuItem
-              key={loc.value}
-              onClick={() => setLocale(loc.value)}
-              className={cn("gap-2.5", locale === loc.value && "text-foreground")}
-            >
-              <span className="text-sm" aria-hidden="true">
-                {loc.flag}
-              </span>
-              {loc.label}
-              {locale === loc.value && <CheckIcon className="ml-auto size-3 text-foreground" />}
-            </DropdownMenuItem>
-          ))}
+          <DropdownMenuRadioGroup
+            value={locale}
+            onValueChange={(value) => setLocale(value as Locale)}
+            aria-label={t.theme.language}
+          >
+            {LOCALES.map((loc) => (
+              <DropdownMenuRadioItem
+                key={loc.value}
+                value={loc.value}
+                className="min-h-[44px] gap-2.5 font-mono text-sm"
+              >
+                <span className="text-sm" aria-hidden="true">
+                  {loc.flag}
+                </span>
+                {loc.label}
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenuPositioner>
     </DropdownMenu>

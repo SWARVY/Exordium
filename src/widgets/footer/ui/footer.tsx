@@ -24,22 +24,22 @@ export function Footer() {
 
   return (
     <footer className="bg-primary text-primary-foreground">
-      <div className="mx-auto max-w-5xl px-6 py-12">
+      <div className="page-shell reading-space">
         {/* Top row */}
-        <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-8 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
           {/* Brand */}
           <div className="flex flex-col gap-2">
-            <span className="font-mono text-xs font-bold uppercase tracking-[0.25em] opacity-90">
+            <span className="font-mono text-xs font-bold uppercase tracking-[0.25em]">
               Exordium
             </span>
-            <p className="font-mono text-[11px] leading-relaxed opacity-50">{t.footer.tagline}</p>
+            <p className="font-mono text-sm leading-relaxed">{t.footer.tagline}</p>
           </div>
 
           {/* Nav + Connect */}
-          <div className="flex gap-12">
+          <div className="flex flex-wrap gap-12">
             {/* Navigation */}
             <div className="flex flex-col gap-3">
-              <span className="font-mono text-[9px] uppercase tracking-widest opacity-40">
+              <span className="font-mono text-xs uppercase tracking-widest">
                 {t.footer.navigate}
               </span>
               <ul className="flex flex-col gap-2">
@@ -47,7 +47,7 @@ export function Footer() {
                   <li key={item.to}>
                     <Link
                       to={item.to}
-                      className="font-mono text-[11px] opacity-60 transition-opacity hover:opacity-100"
+                      className="font-mono text-sm underline-offset-4 hover:underline"
                     >
                       {item.label}
                     </Link>
@@ -59,7 +59,7 @@ export function Footer() {
             {/* Connect */}
             {mounted && owner?.githubUrl && (
               <div className="flex flex-col gap-3">
-                <span className="font-mono text-[9px] uppercase tracking-widest opacity-40">
+                <span className="font-mono text-xs uppercase tracking-widest">
                   {t.footer.connect}
                 </span>
                 <ul className="flex flex-col gap-2">
@@ -68,7 +68,7 @@ export function Footer() {
                       href={owner.githubUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 font-mono text-[11px] opacity-60 transition-opacity hover:opacity-100"
+                      className="flex items-center gap-1.5 font-mono text-sm underline-offset-4 hover:underline"
                     >
                       <GithubIcon className="size-3" />
                       GitHub
@@ -84,9 +84,9 @@ export function Footer() {
         <div className="mt-10 border-t border-primary-foreground/10" />
 
         {/* Bottom row */}
-        <div className="mt-5 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-mono text-[10px] opacity-40">© {year} Exordium</p>
-          <p className="font-mono text-[10px] opacity-30">{t.footer.builtWith}</p>
+        <div className="mt-5 flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+          <p className="font-mono text-sm">© {year} Exordium</p>
+          <p className="font-mono text-sm">{t.footer.builtWith}</p>
         </div>
       </div>
     </footer>

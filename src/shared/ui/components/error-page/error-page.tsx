@@ -18,7 +18,7 @@ export function ErrorPage({ error, reset }: ErrorPageProps) {
         <span className="font-mono text-xs font-semibold uppercase tracking-widest text-destructive">
           — {t.error.errorTitle}
         </span>
-        <h1 className="mt-3 text-[8rem] font-black leading-none tracking-tighter text-foreground">
+        <h1 className="mt-3 text-[clamp(3rem,16vw,8rem)] font-black leading-none tracking-tighter text-foreground">
           {t.error.errorTitle}
         </h1>
         <p className="mt-2 text-lg font-semibold text-foreground">{t.error.errorDesc}</p>
@@ -26,13 +26,13 @@ export function ErrorPage({ error, reset }: ErrorPageProps) {
           {t.error.errorSub}
         </p>
 
-        {error?.message && (
-          <pre className="mt-4 rounded-sm border border-border bg-muted/50 px-4 py-3 text-left font-mono text-[11px] leading-relaxed text-muted-foreground">
+        {import.meta.env.DEV && error?.message && (
+          <pre className="mt-4 whitespace-pre-wrap break-words rounded-sm border border-border bg-muted/50 px-4 py-3 text-left font-mono text-[11px] leading-relaxed text-muted-foreground">
             {error.message}
           </pre>
         )}
 
-        <div className="mt-8 flex items-center justify-center gap-3">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           {reset && (
             <button
               type="button"
@@ -40,7 +40,7 @@ export function ErrorPage({ error, reset }: ErrorPageProps) {
                 reset()
                 router.invalidate()
               }}
-              className="inline-flex items-center gap-2 rounded-sm bg-primary px-5 py-2.5 font-mono text-xs font-medium uppercase tracking-wider text-primary-foreground transition-opacity hover:opacity-90"
+              className="inline-flex min-h-11 items-center gap-2 rounded-sm bg-primary px-5 py-2.5 font-mono text-xs font-medium uppercase tracking-wider text-primary-foreground transition-opacity hover:opacity-90"
             >
               <RefreshCcwIcon className="size-3" />
               {t.action.retry}
@@ -48,7 +48,7 @@ export function ErrorPage({ error, reset }: ErrorPageProps) {
           )}
           <Link
             to={routes.home}
-            className="inline-flex items-center gap-2 rounded-sm border border-border px-5 py-2.5 font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+            className="inline-flex min-h-11 items-center gap-2 rounded-sm border border-border px-5 py-2.5 font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary hover:text-primary-ink"
           >
             <ArrowLeftIcon className="size-3" />
             {t.action.backHome}

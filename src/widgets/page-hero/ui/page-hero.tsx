@@ -2,9 +2,11 @@ import { siteConfigQueryOptions } from "@entities/site-config"
 import { useUpdateSiteConfig } from "@features/update-site-config"
 import { useIsOwner } from "@shared/hooks/use-is-owner"
 import { useT } from "@shared/i18n"
+import { fieldErrorMessage } from "@shared/lib/field-error"
+import { FieldError } from "@shared/ui/components/field-error"
 import { useSuspenseQuery } from "@suspensive/react-query-5"
 import { CheckIcon, PencilIcon, XIcon } from "lucide-react"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import type { SiteConfig } from "@entities/site-config"
 
@@ -18,14 +20,25 @@ interface PageHeroProps {
 export function PageHero({ tag, title, subtitleKey }: PageHeroProps) {
   const t = useT()
   const { data: config } = useSuspenseQuery(siteConfigQueryOptions.config())
-  const { mutate: updateConfig, isPending } = useUpdateSiteConfig()
+  const {
+    mutate: updateConfig,
+    isPending,
+    error: updateError,
+    reset: resetUpdate,
+  } = useUpdateSiteConfig()
   const isOwner = useIsOwner()
 
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState("")
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const errorId = `site-subtitle-${subtitleKey}-error`
+
+  useEffect(() => {
+    if (updateError) inputRef.current?.focus()
+  }, [updateError])
 
   function startEdit() {
+    resetUpdate()
     setDraft(config[subtitleKey])
     setIsEditing(true)
     setTimeout(() => inputRef.current?.focus(), 0)
@@ -46,63 +59,70 @@ export function PageHero({ tag, title, subtitleKey }: PageHeroProps) {
       handleSave()
     }
     if (e.key === "Escape") {
+      resetUpdate()
       setIsEditing(false)
     }
   }
 
   return (
     <section className="grid-paper border-b border-border" aria-label={t.aria.pageHeader(title)}>
-      <div className="mx-auto max-w-5xl px-6 py-16">
-        <span className="font-mono text-xs font-semibold uppercase tracking-widest text-primary">
-          — {tag}
-        </span>
-        <h1 className="mt-2 text-5xl font-black tracking-tight text-foreground sm:text-6xl">
-          {title}
-        </h1>
+      <div className="page-shell section-space">
+        <span className="type-eyebrow text-primary-ink">— {tag}</span>
+        <h1 className="type-page mt-2 text-foreground">{title}</h1>
 
         {/* Subtitle */}
         <div className="mt-4 flex items-start gap-2">
           {isEditing ? (
-            <>
-              <textarea
-                ref={inputRef}
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={handleKeyDown}
-                rows={2}
-                className="max-w-md flex-1 resize-none rounded-sm border border-primary bg-card px-3 py-1.5 font-mono text-sm leading-relaxed text-foreground outline-none ring-2 ring-primary/20"
-              />
-              <div className="flex items-center gap-1 pt-0.5">
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={isPending}
-                  aria-label={t.action.save}
-                  className="flex size-7 items-center justify-center rounded-sm border border-primary/40 bg-primary/10 text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-50"
-                >
-                  <CheckIcon className="size-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(false)}
-                  aria-label={t.action.cancel}
-                  className="flex size-7 items-center justify-center rounded-sm border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
-                >
-                  <XIcon className="size-3.5" />
-                </button>
+            <div className="flex max-w-xl flex-1 flex-col gap-2">
+              <div className="flex items-start gap-2">
+                <textarea
+                  ref={inputRef}
+                  value={draft}
+                  onChange={(e) => {
+                    if (updateError) resetUpdate()
+                    setDraft(e.target.value)
+                  }}
+                  onKeyDown={handleKeyDown}
+                  rows={2}
+                  aria-label={t.community.subtitleInput}
+                  aria-describedby={updateError ? errorId : undefined}
+                  aria-invalid={fieldErrorMessage([updateError]) ? true : undefined}
+                  className="max-w-md flex-1 resize-none rounded-sm border border-primary bg-card px-3 py-1.5 type-body text-foreground outline-none ring-2 ring-primary/20"
+                />
+                <div className="flex items-center gap-1 pt-0.5">
+                  <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={isPending}
+                    aria-label={t.action.save}
+                    className="flex size-11 items-center justify-center rounded-sm border border-primary/40 bg-primary/10 text-primary-ink transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-50"
+                  >
+                    <CheckIcon className="size-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      resetUpdate()
+                      setIsEditing(false)
+                    }}
+                    aria-label={t.action.cancel}
+                    className="flex size-11 items-center justify-center rounded-sm border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+                  >
+                    <XIcon className="size-3.5" />
+                  </button>
+                </div>
               </div>
-            </>
+              <FieldError errors={[updateError]} id={errorId} />
+            </div>
           ) : (
             <>
-              <p className="max-w-md font-mono text-sm leading-relaxed text-muted-foreground">
-                {config[subtitleKey]}
-              </p>
+              <p className="type-body max-w-md text-muted-foreground">{config[subtitleKey]}</p>
               {isOwner && (
                 <button
                   type="button"
                   onClick={startEdit}
                   aria-label={t.aria.subtitleEdit}
-                  className="mt-0.5 flex size-6 items-center justify-center rounded-sm text-muted-foreground/30 transition-colors hover:text-primary"
+                  className="flex size-11 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-primary-ink"
                 >
                   <PencilIcon className="size-3" />
                 </button>

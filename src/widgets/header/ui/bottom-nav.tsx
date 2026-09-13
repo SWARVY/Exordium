@@ -18,23 +18,23 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 sm:hidden border-t border-border bg-background/95 backdrop-blur-md"
+      className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background sm:hidden"
       aria-label={t.aria.bottomNav}
     >
-      <ul className="flex h-16 items-center justify-around px-2">
+      <ul className="flex min-h-16 items-center justify-around px-2">
         {NAV_ITEMS.map(({ label, to, icon: Icon }) => (
-          <li key={to} className="flex-1">
+          <li key={to} className="min-w-0 flex-1">
             <Link
               to={to}
-              className="flex flex-col items-center gap-1 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground [&.active]:text-primary"
+              className="flex min-h-14 flex-col items-center justify-center gap-1 py-2 text-center font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors [overflow-wrap:anywhere] hover:text-foreground [&.active]:text-primary-ink"
             >
               <Icon className="size-5" aria-hidden="true" />
-              {label}
+              <span className="max-w-full">{label}</span>
             </Link>
           </li>
         ))}
-        <li className="flex-1 flex flex-col items-center justify-center">
-          {session ? <LogoutButton /> : <LoginButton />}
+        <li className="flex min-w-0 flex-1 flex-col items-center justify-center">
+          {session ? <LogoutButton variant="navigation" /> : <LoginButton variant="navigation" />}
         </li>
       </ul>
     </nav>

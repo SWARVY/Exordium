@@ -32,6 +32,11 @@ function applyPalette(paletteId: string, mode: ThemeMode) {
   const isDark = mode === "dark"
 
   root.style.setProperty("--primary", isDark ? palette.darkPrimary : palette.primary)
+  root.style.setProperty("--primary-ink", isDark ? palette.darkPrimaryInk : palette.primaryInk)
+  root.style.setProperty(
+    "--primary-display",
+    isDark ? palette.darkPrimary : (palette.primaryDisplay ?? palette.primary),
+  )
   root.style.setProperty(
     "--primary-foreground",
     isDark ? palette.darkPrimaryForeground : palette.primaryForeground,
@@ -68,23 +73,41 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const [mode, setModeState] = useState<ThemeMode>("light")
   const [paletteId, setPaletteIdState] = useState<string>(DEFAULT_PALETTE_ID)
 
+  const [ready, setReady] = useState(false)
+
   useEffect(() => {
-    const stored = localStorage.getItem("theme-mode")
-    if (stored === "dark" || stored === "light") {
-      setModeState(stored)
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setModeState("dark")
+    let storedMode: string | null = null
+    let storedPalette: string | null = null
+    try {
+      storedMode = localStorage.getItem("theme-mode")
+      storedPalette = localStorage.getItem("theme-palette")
+    } catch {
+      /* Storage can be disabled by the browser. */
     }
-    const storedPalette = localStorage.getItem("theme-palette")
-    if (storedPalette) setPaletteIdState(storedPalette)
+    setModeState(
+      storedMode === "dark" || storedMode === "light"
+        ? storedMode
+        : window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light",
+    )
+    if (COLOR_PALETTES.some((palette) => palette.id === storedPalette)) {
+      setPaletteIdState(storedPalette!)
+    }
+    setReady(true)
   }, [])
 
   useEffect(() => {
+    if (!ready) return
     document.documentElement.classList.toggle("dark", mode === "dark")
-    localStorage.setItem("theme-mode", mode)
-    localStorage.setItem("theme-palette", paletteId)
+    try {
+      localStorage.setItem("theme-mode", mode)
+      localStorage.setItem("theme-palette", paletteId)
+    } catch {
+      /* The selected theme still applies for this session. */
+    }
     applyPalette(paletteId, mode)
-  }, [mode, paletteId])
+  }, [mode, paletteId, ready])
 
   const setMode = (newMode: ThemeMode) => setModeState(newMode)
   const setPaletteId = (id: string) => setPaletteIdState(id)

@@ -1,12 +1,8 @@
-import { LoginButton, LogoutButton } from "@features/auth"
 import { routes } from "@shared/constants/routes"
 import { useT } from "@shared/i18n"
-import { AuthContext } from "@shared/ui/providers/auth-provider"
 import { Link } from "@tanstack/react-router"
-import { useContext } from "react"
 
 export function NavMenu() {
-  const { session } = useContext(AuthContext)
   const t = useT()
 
   const NAV_LINKS = [
@@ -21,13 +17,12 @@ export function NavMenu() {
           <li key={link.to}>
             <Link
               to={link.to}
-              className="rounded-full px-3 py-1.5 font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground [&.active]:text-primary"
+              className="inline-flex min-h-11 items-center rounded-xs px-3 py-2 font-mono text-sm font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground [&.active]:text-primary-ink"
             >
               {link.label}
             </Link>
           </li>
         ))}
-        <li className="ml-1">{session ? <LogoutButton /> : <LoginButton />}</li>
       </ul>
     </nav>
   )

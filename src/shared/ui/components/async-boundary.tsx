@@ -21,7 +21,7 @@ function QueryErrorFallback({ error, reset }: ErrorBoundaryFallbackProps) {
       <button
         type="button"
         onClick={reset}
-        className="inline-flex items-center gap-2 rounded-sm border border-border px-4 py-2 font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+        className="inline-flex min-h-11 items-center gap-2 rounded-sm border border-border px-4 py-2 font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary hover:text-primary-ink"
       >
         <RefreshCcwIcon className="size-3" />
         {t.action.retry}
