@@ -4,6 +4,7 @@ import { getThemeInitScript } from "@shared/lib/theme-init-script"
 import { ErrorPage } from "@shared/ui/components/error-page/error-page"
 import { NotFoundPage } from "@shared/ui/components/error-page/not-found-page"
 import { AuthProvider } from "@shared/ui/providers/auth-provider"
+import { ReadingScroll } from "@shared/ui/providers/reading-scroll"
 import { ThemeProvider, useThemeContext } from "@shared/ui/providers/theme-provider"
 import { WriteActionProvider } from "@shared/ui/providers/write-action-provider"
 import { TanStackDevtools } from "@tanstack/react-devtools"
@@ -107,10 +108,11 @@ function RootLayout() {
         <ThemeProvider>
           <WriteActionProvider>
             <MotionConfig reducedMotion="user">
+              <ReadingScroll disabled={isEditorPage} />
               <SonnerToaster />
               <div className="flex min-h-screen flex-col bg-background text-foreground">
                 <Header />
-                <main className="flex-1">
+                <main className="page-content flex-1">
                   <Outlet />
                 </main>
                 <Footer />

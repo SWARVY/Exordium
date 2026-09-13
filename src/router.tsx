@@ -1,3 +1,5 @@
+import { createPageTransition } from "@shared/lib/page-transition"
+import { NotFoundPage } from "@shared/ui/components/error-page/not-found-page"
 import { QueryClient } from "@tanstack/react-query"
 import { createRouter as createTanStackRouter } from "@tanstack/react-router"
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query"
@@ -16,7 +18,11 @@ export function getRouter() {
 
   const router = createTanStackRouter({
     routeTree,
+    defaultNotFoundComponent: NotFoundPage,
     scrollRestoration: true,
+    defaultViewTransition: createPageTransition(
+      typeof window === "undefined" ? undefined : window.location.pathname,
+    ),
     defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
     context: { queryClient },
