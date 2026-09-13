@@ -2,6 +2,9 @@ node_modules
 .DS_Store
 dist
 dist-ssr
+dist-e2e
+test-results
+playwright-report
 *.local
 .env
 .env.local
@@ -12,3 +15,7 @@ dist-ssr
 .vinxi
 __unconfig*
 todos.json
+
+# Local planning and review records
+/docs/reviews/
+/docs/specsheets/

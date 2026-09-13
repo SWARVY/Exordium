@@ -1,7 +1,7 @@
 -- ================================================================
 -- Exordium — seed data
 --
--- Run this after applying 001-schema.sql.
+-- Run this after applying 001_schema.sql.
 -- Replace placeholder values with your actual information.
 -- ================================================================
 

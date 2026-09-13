@@ -26,9 +26,9 @@ Exordium is a personal engineering blog platform with GitHub OAuth authenticatio
 - **Posts** — Lexical rich text editor, image upload, tags, infinite scroll, 30-second draft auto-save
 - **Comments & Reactions** — Any GitHub-authenticated visitor can comment, 1-depth replies, emoji reactions
 - **Open Source Projects** — Drag-and-drop reorderable project showcase
-- **Theming** — Light/dark mode + 5 color palettes (persisted in localStorage)
+- **Theming** — Light/dark mode + 6 color palettes (persisted in localStorage)
 - **i18n** — Korean / English / Japanese UI switching
-- **SSR** — TanStack Start server-side rendering with no hydration mismatches
+- **SSR** — TanStack Start server-side rendering, including published article content
 
 ### Tech Stack
 
@@ -62,20 +62,21 @@ cp .env.example .env.local
 
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_OWNER_ID=your-supabase-user-id
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your-key
+VITE_SITE_URL=http://localhost:3000
 ```
 
-> `VITE_OWNER_ID` is the UUID assigned after your first GitHub login via Supabase Authentication.
+> Set the Publishable key in `VITE_SUPABASE_PUBLISHABLE_KEY`. Existing deployments can still use `VITE_SUPABASE_ANON_KEY` as a fallback; the new variable takes precedence when both are set. Owner access uses the Supabase user claim `app_metadata.role = "owner"`. Set `VITE_SITE_URL` to the public domain for production builds.
+
+> Run the SQL below only when initializing a new project. Edit the profile in `seed.sql` first; do not reapply it to an existing database.
 
 #### 3. Run Supabase migrations
 
 In Supabase Dashboard → SQL Editor, run in order:
 
 ```
-supabase/migrations/001-init-tables.sql
-supabase/migrations/002-rls-policies.sql
-supabase/migrations/003-open-source.sql
+supabase/migrations/001_schema.sql
+supabase/seed.sql
 ```
 
 #### 4. Configure GitHub OAuth
@@ -139,3 +140,5 @@ bun run test       # vitest test runner
 <div align="center">
   <sub>Built with <a href="https://tanstack.com/start">TanStack Start</a></sub>
 </div>
+
+See [Local testing](docs/local-testing.md) for the isolated Supabase environment and repeatable test commands (Korean).
