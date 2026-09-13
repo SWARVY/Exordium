@@ -1,5 +1,5 @@
-function requireEnv(key: string): string {
-  const value = import.meta.env[key]
+function requireEnv(key: string, fallbackKey?: string): string {
+  const value = import.meta.env[key] || (fallbackKey && import.meta.env[fallbackKey])
   if (!value) {
     throw new Error(`Missing required environment variable: ${key}`)
   }
@@ -9,7 +9,7 @@ function requireEnv(key: string): string {
 export const env = {
   supabase: {
     url: requireEnv("VITE_SUPABASE_URL"),
-    anonKey: requireEnv("VITE_SUPABASE_ANON_KEY"),
+    publishableKey: requireEnv("VITE_SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_ANON_KEY"),
   },
   site: {
     url: import.meta.env.VITE_SITE_URL ?? "https://forimaginary.dev",

@@ -26,9 +26,9 @@ Exordium は GitHub OAuth 認証を使用する個人エンジニアリングブ
 - **記事** — Lexical リッチテキストエディタ、画像アップロード、タグ、無限スクロール、30秒自動下書き保存
 - **コメント & リアクション** — GitHub 認証済み訪問者なら誰でも参加可能、1段階返信、絵文字リアクション
 - **オープンソースプロジェクト** — ドラッグ＆ドロップで並び替え可能なプロジェクト一覧
-- **テーマ** — ライト/ダークモード + 5種類のカラーパレット（localStorage 保持）
+- **テーマ** — ライト/ダークモード + 6種類のカラーパレット（localStorage 保持）
 - **i18n** — 韓国語 / 英語 / 日本語 UI 切り替え
-- **SSR** — TanStack Start によるサーバーサイドレンダリング、hydration mismatch なし
+- **SSR** — TanStack Start によるサーバーサイドレンダリング（公開記事の本文を含む）
 
 ### 技術スタック
 
@@ -62,20 +62,21 @@ cp .env.example .env.local
 
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_OWNER_ID=your-supabase-user-id
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your-key
+VITE_SITE_URL=http://localhost:3000
 ```
 
-> `VITE_OWNER_ID` は Supabase Authentication で GitHub ログイン後に発行される UUID です。
+> `VITE_SUPABASE_PUBLISHABLE_KEY` に Publishable key を設定します。既存環境向けに `VITE_SUPABASE_ANON_KEY` もフォールバックとして対応し、両方を設定した場合は新しい変数を優先します。管理者権限は Supabase ユーザーの `app_metadata.role = "owner"` で判定します。本番ビルドでは `VITE_SITE_URL` を公開ドメインに設定してください。
+
+> 以下の SQL は新規プロジェクトの初期化専用です。`seed.sql` のプロフィールを編集してから適用し、既存のデータベースには再適用しないでください。
 
 #### 3. Supabase マイグレーションの実行
 
 Supabase ダッシュボード → SQL Editor で以下を順番に実行します。
 
 ```
-supabase/migrations/001-init-tables.sql
-supabase/migrations/002-rls-policies.sql
-supabase/migrations/003-open-source.sql
+supabase/migrations/001_schema.sql
+supabase/seed.sql
 ```
 
 #### 4. GitHub OAuth の設定
@@ -139,3 +140,5 @@ bun run test       # vitest テスト実行
 <div align="center">
   <sub>Built with <a href="https://tanstack.com/start">TanStack Start</a></sub>
 </div>
+
+ローカル専用 Supabase とテストの実行方法は [ローカルテスト環境](docs/local-testing.md) を参照してください（韓国語）。
