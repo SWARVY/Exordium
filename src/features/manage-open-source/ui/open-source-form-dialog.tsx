@@ -1,4 +1,5 @@
 import { useT } from "@shared/i18n"
+import { Button } from "@shared/ui/components/button"
 import {
   Dialog,
   DialogContent,
@@ -6,6 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@shared/ui/components/dialog"
+import { PlusIcon, PencilIcon } from "lucide-react"
 import { useState } from "react"
 
 import { useCreateOpenSource, useUpdateOpenSource } from "../api/open-source-mutations"
@@ -47,20 +49,15 @@ export function OpenSourceFormDialog({ mode, item }: OpenSourceFormDialogProps) 
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <button
-            className={
-              mode === "create"
-                ? "rounded-full bg-primary px-4 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-primary-foreground transition-opacity hover:opacity-90"
-                : "rounded-full border border-border px-4 py-1.5 font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
-            }
-          >
+          <Button type="button" variant="outline" size="sm">
+            {mode === "create" ? <PlusIcon /> : <PencilIcon />}
             {mode === "create" ? t.projectForm.addBtn : t.projectForm.editBtn}
-          </button>
+          </Button>
         }
       />
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="font-mono text-xs font-semibold uppercase tracking-widest text-primary">
+        <DialogHeader className="text-left">
+          <DialogTitle className="pr-8 text-xl font-bold tracking-tight text-foreground">
             {mode === "create" ? t.projectForm.addTitle : t.projectForm.editTitle}
           </DialogTitle>
         </DialogHeader>
@@ -68,6 +65,7 @@ export function OpenSourceFormDialog({ mode, item }: OpenSourceFormDialogProps) 
           defaultValues={defaultValues}
           onSubmit={handleSubmit}
           isPending={isPending}
+          onCancel={() => setOpen(false)}
         />
       </DialogContent>
     </Dialog>

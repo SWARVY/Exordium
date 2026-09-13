@@ -1,69 +1,19 @@
-import {
-  DndContext,
-  DragOverlay,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core"
-import {
-  SortableContext,
-  arrayMove,
-  horizontalListSortingStrategy,
-  useSortable,
-} from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
 import { OwnerProfileFormSchema, type OwnerProfile } from "@entities/owner"
 import { useUpdateProfile } from "@features/update-profile"
-import { supabase } from "@shared/api/supabase-client"
+import { removeStagedAvatar, type StagedAvatar } from "@features/update-profile/api/avatar-storage"
 import { useT } from "@shared/i18n"
+import { fieldErrorMessage } from "@shared/lib/field-error"
+import { Button } from "@shared/ui/components/button"
+import { FieldError } from "@shared/ui/components/field-error"
 import { Input } from "@shared/ui/components/input"
 import { Label } from "@shared/ui/components/label"
+import { Textarea } from "@shared/ui/components/textarea"
 import { useForm } from "@tanstack/react-form"
-import { GripIcon, ImageIcon, PlusIcon, UploadIcon, XIcon } from "lucide-react"
+import { PlusIcon } from "lucide-react"
 import { useRef, useState } from "react"
 
-import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core"
-
-function SortableSkillTag({
-  skill,
-  onRemove,
-  removeLabel,
-}: {
-  skill: string
-  onRemove: () => void
-  removeLabel: string
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: skill,
-  })
-
-  return (
-    <span
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0 : 1,
-      }}
-      className="flex cursor-grab items-center gap-1 rounded-full border border-primary px-2.5 py-0.5 font-mono text-xs text-primary active:cursor-grabbing"
-    >
-      <GripIcon className="size-2.5 opacity-40" />
-      {skill}
-      <button
-        type="button"
-        onClick={onRemove}
-        onPointerDown={(e) => e.stopPropagation()}
-        className="ml-0.5 opacity-60 transition-opacity hover:opacity-100"
-        aria-label={removeLabel}
-      >
-        <XIcon className="size-2.5" />
-      </button>
-    </span>
-  )
-}
+import { AvatarField } from "./avatar-field"
+import { SkillOrderField } from "./skill-order-field"
 
 interface OwnerProfileEditFormProps {
   profile: OwnerProfile
@@ -72,14 +22,18 @@ interface OwnerProfileEditFormProps {
 }
 
 export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProfileEditFormProps) {
-  const { mutate: updateProfile, isPending } = useUpdateProfile()
+  const {
+    mutate: updateProfile,
+    isPending,
+    isError: isSaveError,
+    reset: resetSaveError,
+  } = useUpdateProfile()
   const t = useT()
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [isUploading, setIsUploading] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
   const [skillInput, setSkillInput] = useState("")
-  const [activeSkill, setActiveSkill] = useState<string | null>(null)
-
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
+  const [stagedAvatar, setStagedAvatar] = useState<StagedAvatar | null>(null)
+  const [isAvatarBusy, setIsAvatarBusy] = useState(false)
+  const [cancelError, setCancelError] = useState(false)
 
   const form = useForm({
     formId: "owner-profile-edit",
@@ -94,30 +48,16 @@ export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProf
     },
     validators: { onSubmit: OwnerProfileFormSchema },
     onSubmit: ({ value }) => {
-      updateProfile(value as Parameters<typeof updateProfile>[0], { onSuccess })
+      if (isAvatarBusy || isPending) return
+      resetSaveError()
+      updateProfile(value as Parameters<typeof updateProfile>[0], {
+        onSuccess: () => {
+          setStagedAvatar(null)
+          onSuccess()
+        },
+      })
     },
   })
-
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setIsUploading(true)
-    try {
-      const ext = file.name.split(".").pop()
-      const path = `avatar.${ext}`
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(path, file, { upsert: true })
-      if (uploadError) throw uploadError
-      const { data } = supabase.storage.from("avatars").getPublicUrl(path)
-      // 캐시 버스팅
-      form.setFieldValue("avatarUrl", `${data.publicUrl}?t=${Date.now()}`)
-    } catch (err) {
-      console.error("Avatar upload failed:", err)
-    } finally {
-      setIsUploading(false)
-    }
-  }
 
   const addSkill = () => {
     const trimmed = skillInput.trim()
@@ -129,14 +69,6 @@ export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProf
     setSkillInput("")
   }
 
-  const removeSkill = (skill: string) => {
-    const current = form.getFieldValue("skills")
-    form.setFieldValue(
-      "skills",
-      current.filter((s) => s !== skill),
-    )
-  }
-
   const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault()
@@ -144,223 +76,227 @@ export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProf
     }
   }
 
+  async function handleCancel() {
+    if (isAvatarBusy) return
+    setCancelError(false)
+    if (stagedAvatar) {
+      setIsAvatarBusy(true)
+      try {
+        await removeStagedAvatar(stagedAvatar.path)
+      } catch {
+        setCancelError(true)
+        return
+      } finally {
+        setIsAvatarBusy(false)
+      }
+    }
+    onCancel()
+  }
+
   return (
     <form
+      ref={formRef}
       onSubmit={(e) => {
         e.preventDefault()
-        form.handleSubmit()
+        void form.handleSubmit().then(() => {
+          formRef.current?.querySelector<HTMLElement>("[aria-invalid='true']")?.focus()
+        })
       }}
-      className="flex flex-col gap-6 py-6"
+      aria-label={t.profile.editTitle}
+      className="mx-auto flex w-full max-w-3xl flex-col gap-8 py-2"
     >
-      {/* ── 아바타 업로드 ── */}
-      <div className="flex flex-col gap-2">
-        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-          {t.profile.avatar}
-        </span>
-        <div className="flex items-center gap-4">
-          {/* 미리보기 */}
-          <form.Subscribe selector={(s) => s.values.avatarUrl}>
-            {(avatarUrl) =>
-              avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={t.profile.avatarAlt}
-                  className="clip-chamfer size-20 object-cover"
-                />
-              ) : (
-                <div className="clip-chamfer flex size-20 items-center justify-center bg-muted text-muted-foreground">
-                  <ImageIcon className="size-6" />
-                </div>
-              )
-            }
+      <h2 className="form-heading">{t.profile.editTitle}</h2>
+      <fieldset className="grid min-w-0 gap-5 sm:grid-cols-2">
+        <legend className="mb-4 text-sm font-semibold">{t.profile.basicInfo}</legend>
+        <div className="min-w-0 sm:row-span-2">
+          <form.Subscribe selector={(state) => state.values.avatarUrl}>
+            {(avatarUrl) => (
+              <AvatarField
+                value={avatarUrl}
+                stagedAvatar={stagedAvatar}
+                disabled={isPending}
+                onBusyChange={setIsAvatarBusy}
+                onChange={(avatar) => {
+                  setStagedAvatar(avatar)
+                  setCancelError(false)
+                  form.setFieldValue("avatarUrl", avatar.url)
+                }}
+              />
+            )}
           </form.Subscribe>
-
-          <div className="flex flex-col gap-2">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className="flex items-center gap-1.5 rounded-sm border border-border px-3 py-1.5 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
-            >
-              <UploadIcon className="size-3" />
-              {isUploading ? t.action.uploading : t.action.upload}
-            </button>
-            <p className="font-mono text-[10px] text-muted-foreground/60">{t.profile.avatarHint}</p>
-          </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="hidden"
-            onChange={handleAvatarUpload}
-          />
         </div>
-      </div>
 
-      <div className="border-t border-dashed border-border" />
+        {/* ── 이름 ── */}
+        <form.Field name="name">
+          {(field) => {
+            const errorId = `${field.name}-error`
+            const invalid = Boolean(fieldErrorMessage(field.state.meta.errors))
+            return (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor={field.name} className="form-label">
+                  {t.profile.name}
+                </Label>
+                <Input
+                  id={field.name}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  aria-invalid={invalid}
+                  aria-describedby={invalid ? errorId : undefined}
+                />
+                <FieldError errors={field.state.meta.errors} id={errorId} />
+              </div>
+            )
+          }}
+        </form.Field>
 
-      {/* ── 이름 ── */}
-      <form.Field name="name">
-        {(field) => (
-          <div className="flex flex-col gap-1.5">
-            <Label
-              htmlFor={field.name}
-              className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground"
-            >
-              {t.profile.name}
-            </Label>
-            <Input
-              id={field.name}
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
-              className="rounded-sm border-border bg-card focus-visible:border-primary focus-visible:ring-primary/20"
-            />
-            {field.state.meta.errors[0] && (
-              <p className="font-mono text-[10px] text-destructive">
-                {String(field.state.meta.errors[0])}
-              </p>
-            )}
-          </div>
-        )}
-      </form.Field>
-
-      {/* ── 소개 ── */}
-      <form.Field name="bio">
-        {(field) => (
-          <div className="flex flex-col gap-1.5">
-            <Label
-              htmlFor={field.name}
-              className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground"
-            >
-              {t.profile.bio}
-            </Label>
-            <textarea
-              id={field.name}
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
-              rows={3}
-              className="w-full resize-none rounded-sm border border-border bg-card px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground/40 transition-[border-color,box-shadow] focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/20"
-            />
-            {field.state.meta.errors[0] && (
-              <p className="font-mono text-[10px] text-destructive">
-                {String(field.state.meta.errors[0])}
-              </p>
-            )}
-          </div>
-        )}
-      </form.Field>
+        {/* ── 소개 ── */}
+        <form.Field name="bio">
+          {(field) => {
+            const errorId = `${field.name}-error`
+            const invalid = Boolean(fieldErrorMessage(field.state.meta.errors))
+            return (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor={field.name} className="form-label">
+                  {t.profile.bio}
+                </Label>
+                <Textarea
+                  id={field.name}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  rows={4}
+                  aria-invalid={invalid}
+                  aria-describedby={invalid ? errorId : undefined}
+                  className="w-full resize-y leading-relaxed"
+                />
+                <FieldError errors={field.state.meta.errors} id={errorId} />
+              </div>
+            )
+          }}
+        </form.Field>
+      </fieldset>
 
       {/* ── Skills 태그 ── */}
       <form.Field name="skills">
         {(field) => (
-          <div className="flex flex-col gap-2">
-            <Label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          <section
+            aria-labelledby="profile-skills-heading"
+            className="flex min-w-0 flex-col gap-3 border-t border-border pt-6"
+          >
+            <h3 id="profile-skills-heading" className="text-sm font-semibold">
               {t.profile.skills}
-            </Label>
-            {/* 태그 목록 */}
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragStart={(e: DragStartEvent) => setActiveSkill(String(e.active.id))}
-              onDragEnd={(e: DragEndEvent) => {
-                setActiveSkill(null)
-                const { active, over } = e
-                if (!over || active.id === over.id) return
-                const skills = field.state.value
-                const oldIdx = skills.indexOf(String(active.id))
-                const newIdx = skills.indexOf(String(over.id))
-                form.setFieldValue("skills", arrayMove(skills, oldIdx, newIdx))
-              }}
-              onDragCancel={() => setActiveSkill(null)}
-            >
-              <SortableContext items={field.state.value} strategy={horizontalListSortingStrategy}>
-                <div className="flex flex-wrap gap-1.5">
-                  {field.state.value.map((skill) => (
-                    <SortableSkillTag
-                      key={skill}
-                      skill={skill}
-                      onRemove={() => removeSkill(skill)}
-                      removeLabel={t.profile.removeSkill(skill)}
-                    />
-                  ))}
-                </div>
-              </SortableContext>
-              <DragOverlay dropAnimation={null}>
-                {activeSkill && (
-                  <span className="flex cursor-grabbing items-center gap-1 rounded-full border border-primary bg-card px-2.5 py-0.5 font-mono text-xs text-primary shadow-lg shadow-primary/20 ring-1 ring-primary/30">
-                    <GripIcon className="size-2.5 opacity-40" />
-                    {activeSkill}
-                  </span>
-                )}
-              </DragOverlay>
-            </DndContext>
-            {/* 태그 입력 */}
+            </h3>
+            <p id="profile-skills-hint" className="text-xs leading-relaxed text-muted-foreground">
+              {t.profile.skillsHint}
+            </p>
+
             <div className="flex gap-2">
               <Input
+                aria-label={t.management.skillInputLabel}
+                aria-describedby="profile-skills-hint"
                 value={skillInput}
                 onChange={(e) => setSkillInput(e.target.value)}
                 onKeyDown={handleSkillKeyDown}
                 placeholder={t.profile.skillsPlaceholder}
-                className="rounded-sm border-border bg-card font-mono text-xs focus-visible:border-primary focus-visible:ring-primary/20"
               />
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={addSkill}
-                className="flex shrink-0 items-center gap-1 rounded-sm border border-border px-2.5 py-1.5 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                disabled={!skillInput.trim()}
               >
                 <PlusIcon className="size-3" />
                 {t.action.add}
-              </button>
+              </Button>
             </div>
-          </div>
+            <SkillOrderField
+              skills={field.state.value}
+              onChange={(skills) => form.setFieldValue("skills", skills)}
+            />
+          </section>
         )}
       </form.Field>
 
-      <div className="border-t border-dashed border-border" />
+      <fieldset className="grid min-w-0 gap-4 border-t border-border pt-6 sm:grid-cols-2">
+        <legend className="pr-3 text-sm font-semibold">{t.profile.links}</legend>
+        {(["githubUrl", "twitterUrl", "websiteUrl"] as const).map((fieldName) => (
+          <form.Field key={fieldName} name={fieldName}>
+            {(field) => {
+              const errorId = `${field.name}-error`
+              const invalid = Boolean(fieldErrorMessage(field.state.meta.errors))
+              return (
+                <div
+                  className={
+                    fieldName === "websiteUrl"
+                      ? "flex min-w-0 flex-col gap-1.5 sm:col-span-2"
+                      : "flex min-w-0 flex-col gap-1.5"
+                  }
+                >
+                  <Label htmlFor={field.name} className="form-label">
+                    {fieldName === "githubUrl"
+                      ? t.profile.githubUrl
+                      : fieldName === "twitterUrl"
+                        ? t.profile.twitterUrl
+                        : t.profile.websiteUrl}
+                  </Label>
+                  <Input
+                    id={field.name}
+                    inputMode="url"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder={t.profile.urlPlaceholder}
+                    aria-invalid={invalid}
+                    aria-describedby={invalid ? errorId : undefined}
+                  />
+                  <FieldError errors={field.state.meta.errors} id={errorId} />
+                </div>
+              )
+            }}
+          </form.Field>
+        ))}
+      </fieldset>
 
-      {/* ── 링크 ── */}
-      {(["githubUrl", "twitterUrl", "websiteUrl"] as const).map((fieldName) => (
-        <form.Field key={fieldName} name={fieldName}>
-          {(field) => (
-            <div className="flex flex-col gap-1.5">
-              <Label
-                htmlFor={field.name}
-                className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground"
-              >
-                {fieldName === "githubUrl"
-                  ? t.profile.githubUrl
-                  : fieldName === "twitterUrl"
-                    ? t.profile.twitterUrl
-                    : t.profile.websiteUrl}
-              </Label>
-              <Input
-                id={field.name}
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                placeholder={t.profile.urlPlaceholder}
-                className="rounded-sm border-border bg-card font-mono text-xs focus-visible:border-primary focus-visible:ring-primary/20"
-              />
-            </div>
-          )}
-        </form.Field>
-      ))}
+      {isSaveError ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-2 border-destructive bg-card p-3">
+          <p role="alert" className="text-sm font-medium text-destructive">
+            {t.management.profileSaveFailed}
+          </p>
+          <button
+            type="submit"
+            disabled={isAvatarBusy || isPending}
+            className="min-h-11 px-2 font-mono text-sm font-bold text-foreground underline decoration-2 underline-offset-4 hover:text-primary-ink"
+          >
+            {t.action.retry}
+          </button>
+        </div>
+      ) : null}
+
+      {cancelError ? (
+        <p
+          role="alert"
+          className="rounded-xs border border-destructive bg-card p-3 text-sm text-destructive"
+        >
+          {t.management.avatarCleanupFailed}
+        </p>
+      ) : null}
 
       {/* ── 버튼 ── */}
-      <div className="flex justify-end gap-2 pt-2">
-        <button
+      <div className="flex justify-end gap-2 border-t border-border pt-5">
+        <Button
           type="button"
-          onClick={onCancel}
-          className="rounded-sm border border-border px-4 py-1.5 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+          variant="outline"
+          onClick={() => void handleCancel()}
+          disabled={isAvatarBusy || isPending}
         >
           {t.action.cancel}
-        </button>
-        <button
-          type="submit"
-          disabled={isPending || isUploading}
-          className="rounded-sm border border-primary/40 bg-primary/10 px-4 py-1.5 font-mono text-[10px] font-medium uppercase tracking-wider text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-50"
-        >
+        </Button>
+        <Button type="submit" disabled={isPending || isAvatarBusy}>
           {isPending ? t.action.saving : t.action.save}
-        </button>
+        </Button>
       </div>
     </form>
   )

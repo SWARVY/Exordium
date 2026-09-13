@@ -79,6 +79,8 @@ supabase/migrations/001_schema.sql
 supabase/seed.sql
 ```
 
+既存の運用 DB には `supabase/migrations/20260911084300_atomic_open_source_ordering.sql` を追加適用してください。プロジェクトの並び順を単一トランザクションで保存します。新規環境でも初期スキーマの後に適用が必要です。PR のマージでは DB migration は自動実行されません。
+
 #### 4. GitHub OAuth の設定
 
 Supabase ダッシュボード → Authentication → URL Configuration:

@@ -1,6 +1,6 @@
 import { ownerKeys } from "@entities/owner/api/owner-keys"
-import { useT } from "@shared/i18n"
 import { supabase } from "@shared/api/supabase-client"
+import { useT } from "@shared/i18n"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
@@ -25,11 +25,22 @@ async function updateProfile(form: OwnerProfileForm) {
   }
 
   if (existing) {
-    const { error } = await supabase.from("owner_profile").update(payload).eq("id", existing.id)
+    const { data, error } = await supabase
+      .from("owner_profile")
+      .update(payload)
+      .eq("id", existing.id)
+      .select("id")
+      .maybeSingle()
     if (error) throw error
+    if (!data || data.id !== existing.id) throw new Error("The profile could not be updated.")
   } else {
-    const { error } = await supabase.from("owner_profile").insert(payload)
+    const { data, error } = await supabase
+      .from("owner_profile")
+      .insert(payload)
+      .select("id")
+      .maybeSingle()
     if (error) throw error
+    if (!data) throw new Error("The profile could not be created.")
   }
 }
 
