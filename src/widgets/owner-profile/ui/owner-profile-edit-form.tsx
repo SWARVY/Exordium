@@ -10,7 +10,7 @@ import { Label } from "@shared/ui/components/label"
 import { Textarea } from "@shared/ui/components/textarea"
 import { useForm } from "@tanstack/react-form"
 import { PlusIcon } from "lucide-react"
-import { useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 
 import { AvatarField } from "./avatar-field"
 import { SkillOrderField } from "./skill-order-field"
@@ -20,6 +20,8 @@ interface OwnerProfileEditFormProps {
   onCancel: () => void
   onSuccess: () => void
 }
+
+const selectAvatarUrl = (state: { values: { avatarUrl: string | null } }) => state.values.avatarUrl
 
 export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProfileEditFormProps) {
   const {
@@ -59,7 +61,7 @@ export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProf
     },
   })
 
-  const addSkill = () => {
+  const addSkill = useCallback(() => {
     const trimmed = skillInput.trim()
     if (!trimmed) return
     const current = form.getFieldValue("skills")
@@ -67,16 +69,19 @@ export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProf
       form.setFieldValue("skills", [...current, trimmed])
     }
     setSkillInput("")
-  }
+  }, [form, skillInput])
 
-  const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault()
-      addSkill()
-    }
-  }
+  const handleSkillKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        e.preventDefault()
+        addSkill()
+      }
+    },
+    [addSkill],
+  )
 
-  async function handleCancel() {
+  const handleCancel = useCallback(async () => {
     if (isAvatarBusy) return
     setCancelError(false)
     if (stagedAvatar) {
@@ -91,17 +96,73 @@ export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProf
       }
     }
     onCancel()
-  }
+  }, [isAvatarBusy, onCancel, stagedAvatar])
+
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      void form.handleSubmit().then(() => {
+        formRef.current?.querySelector<HTMLElement>("[aria-invalid='true']")?.focus()
+      })
+    },
+    [form],
+  )
+
+  const handleAvatarChange = useCallback(
+    (avatar: StagedAvatar) => {
+      setStagedAvatar(avatar)
+      setCancelError(false)
+      form.setFieldValue("avatarUrl", avatar.url)
+    },
+    [form],
+  )
+
+  const handleSkillsChange = useCallback(
+    (skills: string[]) => {
+      form.setFieldValue("skills", skills)
+    },
+    [form],
+  )
+
+  const handleNameChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      form.setFieldValue("name", e.target.value)
+    },
+    [form],
+  )
+  const handleBioChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      form.setFieldValue("bio", e.target.value)
+    },
+    [form],
+  )
+  const handleSkillInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSkillInput(e.target.value)
+  }, [])
+  const handleGithubUrlChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      form.setFieldValue("githubUrl", e.target.value)
+    },
+    [form],
+  )
+  const handleTwitterUrlChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      form.setFieldValue("twitterUrl", e.target.value)
+    },
+    [form],
+  )
+  const handleWebsiteUrlChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      form.setFieldValue("websiteUrl", e.target.value)
+    },
+    [form],
+  )
+  const handleCancelClick = useCallback(() => void handleCancel(), [handleCancel])
 
   return (
     <form
       ref={formRef}
-      onSubmit={(e) => {
-        e.preventDefault()
-        void form.handleSubmit().then(() => {
-          formRef.current?.querySelector<HTMLElement>("[aria-invalid='true']")?.focus()
-        })
-      }}
+      onSubmit={handleSubmit}
       aria-label={t.profile.editTitle}
       className="mx-auto flex w-full max-w-3xl flex-col gap-8 py-2"
     >
@@ -109,18 +170,14 @@ export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProf
       <fieldset className="grid min-w-0 gap-5 sm:grid-cols-2">
         <legend className="mb-4 text-sm font-semibold">{t.profile.basicInfo}</legend>
         <div className="min-w-0 sm:row-span-2">
-          <form.Subscribe selector={(state) => state.values.avatarUrl}>
+          <form.Subscribe selector={selectAvatarUrl}>
             {(avatarUrl) => (
               <AvatarField
                 value={avatarUrl}
                 stagedAvatar={stagedAvatar}
                 disabled={isPending}
                 onBusyChange={setIsAvatarBusy}
-                onChange={(avatar) => {
-                  setStagedAvatar(avatar)
-                  setCancelError(false)
-                  form.setFieldValue("avatarUrl", avatar.url)
-                }}
+                onChange={handleAvatarChange}
               />
             )}
           </form.Subscribe>
@@ -140,7 +197,7 @@ export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProf
                   id={field.name}
                   value={field.state.value}
                   onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
+                  onChange={handleNameChange}
                   aria-invalid={invalid}
                   aria-describedby={invalid ? errorId : undefined}
                 />
@@ -164,7 +221,7 @@ export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProf
                   id={field.name}
                   value={field.state.value}
                   onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
+                  onChange={handleBioChange}
                   rows={4}
                   aria-invalid={invalid}
                   aria-describedby={invalid ? errorId : undefined}
@@ -196,7 +253,7 @@ export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProf
                 aria-label={t.management.skillInputLabel}
                 aria-describedby="profile-skills-hint"
                 value={skillInput}
-                onChange={(e) => setSkillInput(e.target.value)}
+                onChange={handleSkillInputChange}
                 onKeyDown={handleSkillKeyDown}
                 placeholder={t.profile.skillsPlaceholder}
               />
@@ -210,10 +267,7 @@ export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProf
                 {t.action.add}
               </Button>
             </div>
-            <SkillOrderField
-              skills={field.state.value}
-              onChange={(skills) => form.setFieldValue("skills", skills)}
-            />
+            <SkillOrderField skills={field.state.value} onChange={handleSkillsChange} />
           </section>
         )}
       </form.Field>
@@ -247,7 +301,13 @@ export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProf
                     spellCheck={false}
                     value={field.state.value}
                     onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
+                    onChange={
+                      fieldName === "githubUrl"
+                        ? handleGithubUrlChange
+                        : fieldName === "twitterUrl"
+                          ? handleTwitterUrlChange
+                          : handleWebsiteUrlChange
+                    }
                     placeholder={t.profile.urlPlaceholder}
                     aria-invalid={invalid}
                     aria-describedby={invalid ? errorId : undefined}
@@ -289,7 +349,7 @@ export function OwnerProfileEditForm({ profile, onCancel, onSuccess }: OwnerProf
         <Button
           type="button"
           variant="outline"
-          onClick={() => void handleCancel()}
+          onClick={handleCancelClick}
           disabled={isAvatarBusy || isPending}
         >
           {t.action.cancel}

@@ -6,7 +6,7 @@ import { AuthContext } from "@shared/ui/providers/auth-provider"
 import { Link } from "@tanstack/react-router"
 import { SearchOverlay } from "@widgets/search"
 import { SearchIcon } from "lucide-react"
-import { useContext, useRef, useState } from "react"
+import { useCallback, useContext, useRef, useState } from "react"
 
 import { NavMenu } from "./nav-menu"
 import { ThemeSelector } from "./theme-selector"
@@ -17,6 +17,8 @@ export function Header() {
   const hydrated = useHydrated()
   const searchTriggerRef = useRef<HTMLButtonElement>(null)
   const [searchOpen, setSearchOpen] = useState(false)
+  const openSearch = useCallback(() => setSearchOpen(true), [])
+  const closeSearch = useCallback(() => setSearchOpen(false), [])
 
   return (
     <>
@@ -43,7 +45,7 @@ export function Header() {
               type="button"
               aria-haspopup="dialog"
               aria-expanded={searchOpen}
-              onClick={() => setSearchOpen(true)}
+              onClick={openSearch}
               aria-label={t.search.openSearch}
               className="flex size-11 shrink-0 items-center justify-center rounded-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
             >
@@ -56,11 +58,7 @@ export function Header() {
           </div>
         </div>
       </header>
-      <SearchOverlay
-        returnFocus={searchTriggerRef}
-        open={searchOpen}
-        onClose={() => setSearchOpen(false)}
-      />
+      <SearchOverlay returnFocus={searchTriggerRef} open={searchOpen} onClose={closeSearch} />
     </>
   )
 }

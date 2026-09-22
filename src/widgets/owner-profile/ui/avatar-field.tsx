@@ -11,7 +11,7 @@ import { cn } from "@shared/lib/utils"
 import { Button } from "@shared/ui/components/button"
 import { Label } from "@shared/ui/components/label"
 import { ImageIcon, UploadIcon } from "lucide-react"
-import { useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { useDropzone } from "react-dropzone"
 
 interface AvatarFieldProps {
@@ -36,43 +36,50 @@ export function AvatarField({
   const [error, setError] = useState<string | null>(null)
   const [isReady, setIsReady] = useState(false)
 
-  async function upload(file: File) {
-    if (disabled || busyRef.current) return
-    busyRef.current = true
-    setLastFile(file)
-    setIsUploading(true)
-    setIsReady(false)
-    setError(null)
-    onBusyChange(true)
+  const upload = useCallback(
+    async (file: File) => {
+      if (disabled || busyRef.current) return
+      busyRef.current = true
+      setLastFile(file)
+      setIsUploading(true)
+      setIsReady(false)
+      setError(null)
+      onBusyChange(true)
 
-    try {
-      const nextAvatar = await stageAvatar(file)
-      if (stagedAvatar && stagedAvatar.path !== nextAvatar.path) {
-        try {
-          await removeStagedAvatar(stagedAvatar.path)
-        } catch (cleanupError) {
-          await removeStagedAvatar(nextAvatar.path).catch(() => null)
-          throw cleanupError
+      try {
+        const nextAvatar = await stageAvatar(file)
+        if (stagedAvatar && stagedAvatar.path !== nextAvatar.path) {
+          try {
+            await removeStagedAvatar(stagedAvatar.path)
+          } catch (cleanupError) {
+            await removeStagedAvatar(nextAvatar.path).catch(() => null)
+            throw cleanupError
+          }
         }
+        onChange(nextAvatar)
+        setIsReady(true)
+      } catch (uploadError) {
+        if (uploadError instanceof AvatarValidationError) {
+          setError(
+            uploadError.code === "too-large"
+              ? t.management.avatarTooLarge
+              : t.management.avatarInvalidType,
+          )
+        } else {
+          setError(t.management.avatarUploadFailed)
+        }
+      } finally {
+        setIsUploading(false)
+        onBusyChange(false)
+        busyRef.current = false
       }
-      onChange(nextAvatar)
-      setIsReady(true)
-    } catch (uploadError) {
-      if (uploadError instanceof AvatarValidationError) {
-        setError(
-          uploadError.code === "too-large"
-            ? t.management.avatarTooLarge
-            : t.management.avatarInvalidType,
-        )
-      } else {
-        setError(t.management.avatarUploadFailed)
-      }
-    } finally {
-      setIsUploading(false)
-      onBusyChange(false)
-      busyRef.current = false
-    }
-  }
+    },
+    [disabled, onBusyChange, onChange, stagedAvatar, t],
+  )
+
+  const retryUpload = useCallback(() => {
+    if (lastFile) void upload(lastFile)
+  }, [lastFile, upload])
 
   const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
     accept: AVATAR_ACCEPT,
@@ -163,7 +170,7 @@ export function AvatarField({
               type="button"
               variant="link"
               size="sm"
-              onClick={() => void upload(lastFile)}
+              onClick={retryUpload}
               disabled={disabled}
             >
               {t.action.retry}

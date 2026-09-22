@@ -4,7 +4,7 @@ import { useT } from "@shared/i18n"
 import { ReactionBar } from "@shared/ui/components/reaction-bar"
 import { AuthContext } from "@shared/ui/providers/auth-provider"
 import { useQuery } from "@tanstack/react-query"
-import { useContext, useRef } from "react"
+import { useCallback, useContext, useRef } from "react"
 
 import type { ReactionEmoji } from "@entities/reaction"
 
@@ -18,6 +18,7 @@ export function PostReactions({ postId }: PostReactionsProps) {
   const toggleLockRef = useRef(false)
 
   const reactionQuery = useQuery(reactionQueryOptions.byPost(postId, userId))
+  const { refetch: refetchReactions } = reactionQuery
   const summary = reactionQuery.data
   const {
     mutate: toggle,
@@ -27,15 +28,31 @@ export function PostReactions({ postId }: PostReactionsProps) {
   } = useTogglePostReaction(postId, userId)
   const t = useT()
 
-  function handleToggle(variables: { emoji: ReactionEmoji; reacted: boolean }) {
-    if (toggleLockRef.current) return
-    toggleLockRef.current = true
-    toggle(variables, {
-      onSettled: () => {
-        toggleLockRef.current = false
-      },
-    })
-  }
+  const handleToggle = useCallback(
+    (variables: { emoji: ReactionEmoji; reacted: boolean }) => {
+      if (toggleLockRef.current) return
+      toggleLockRef.current = true
+      toggle(variables, {
+        onSettled: () => {
+          toggleLockRef.current = false
+        },
+      })
+    },
+    [toggle],
+  )
+
+  const handleReactionToggle = useCallback(
+    (emoji: ReactionEmoji) => {
+      if (!summary) return
+      handleToggle({ emoji, reacted: summary[emoji].reacted })
+    },
+    [handleToggle, summary],
+  )
+
+  const retryToggle = useCallback(() => {
+    if (failedToggle) handleToggle(failedToggle)
+  }, [failedToggle, handleToggle])
+  const retryReactions = useCallback(() => void refetchReactions(), [refetchReactions])
 
   if (reactionQuery.isError) {
     return (
@@ -43,7 +60,7 @@ export function PostReactions({ postId }: PostReactionsProps) {
         <p className="text-sm text-destructive">{t.community.reactionsLoadFailed}</p>
         <button
           type="button"
-          onClick={() => reactionQuery.refetch()}
+          onClick={retryReactions}
           disabled={reactionQuery.isFetching}
           className="min-h-11 rounded-sm border border-input bg-background px-4 font-mono text-xs font-semibold uppercase tracking-wider text-foreground transition-colors hover:border-primary hover:text-primary-ink disabled:cursor-wait disabled:opacity-50"
         >
@@ -60,9 +77,7 @@ export function PostReactions({ postId }: PostReactionsProps) {
       <h2 className="font-mono text-xs font-semibold text-muted-foreground">{t.reaction.label}</h2>
       <ReactionBar
         summary={summary}
-        onToggle={
-          userId ? (emoji) => handleToggle({ emoji, reacted: summary[emoji].reacted }) : undefined
-        }
+        onToggle={userId ? handleReactionToggle : undefined}
         disabled={!userId || isPending}
       />
       {isError && failedToggle && (
@@ -70,7 +85,7 @@ export function PostReactions({ postId }: PostReactionsProps) {
           <p className="text-sm text-destructive">{t.community.reactionSaveFailed}</p>
           <button
             type="button"
-            onClick={() => handleToggle(failedToggle)}
+            onClick={retryToggle}
             disabled={isPending}
             className="min-h-11 rounded-sm border border-input bg-background px-4 font-mono text-xs font-semibold uppercase tracking-wider text-foreground transition-colors hover:border-primary hover:text-primary-ink disabled:cursor-wait disabled:opacity-50"
           >

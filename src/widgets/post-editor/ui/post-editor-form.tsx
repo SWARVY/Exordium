@@ -13,7 +13,7 @@ import { Textarea } from "@shared/ui/components/textarea"
 import { useForm } from "@tanstack/react-form"
 import { useNavigate } from "@tanstack/react-router"
 import { AlertTriangleIcon, ClockIcon } from "lucide-react"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { validatePostDocument, type PostDocumentValidation } from "../model/post-document"
 import { type StoredPostDraft } from "../model/use-draft-auto-save"
@@ -213,15 +213,24 @@ export function PostEditorForm({ post, onCancel, onSaved }: PostEditorFormProps)
       : documentValidation === "invalid"
         ? t.editing.documentInvalid
         : null
+  const editorTips = useMemo(
+    () => [t.postEditor.tipSlug, t.postEditor.tipSlashBlock, t.postEditor.tipFormat],
+    [t.postEditor.tipFormat, t.postEditor.tipSlashBlock, t.postEditor.tipSlug],
+  )
+  const handleFormSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      void form.handleSubmit()
+    },
+    [form],
+  )
+  const handleDocumentLoadError = useCallback(() => setDocumentLoadFailed(true), [])
 
   return (
     <>
       <form
         ref={formElementRef}
-        onSubmit={(event) => {
-          event.preventDefault()
-          form.handleSubmit()
-        }}
+        onSubmit={handleFormSubmit}
         className="flex flex-col gap-0 pb-44 sm:pb-28"
       >
         <fieldset disabled={!interactiveReady || isPending} className="contents">
@@ -291,6 +300,8 @@ export function PostEditorForm({ post, onCancel, onSaved }: PostEditorFormProps)
                       <Input
                         id={field.name}
                         value={field.state.value}
+                        // Field render callbacks capture current field state; hooks cannot run inside this callback.
+                        // oxlint-disable-next-line react-perf/jsx-no-new-function-as-prop
                         onChange={(event) => {
                           field.handleChange(event.target.value)
                           markDirty()
@@ -325,7 +336,7 @@ export function PostEditorForm({ post, onCancel, onSaved }: PostEditorFormProps)
                       label={t.editing.contentLabel}
                       editable={!isPending}
                       onChange={handleEditorChange}
-                      onLoadError={() => setDocumentLoadFailed(true)}
+                      onLoadError={handleDocumentLoadError}
                     />
                   ) : (
                     <div aria-hidden="true" className="min-h-[360px] sm:min-h-[560px]" />
@@ -336,7 +347,7 @@ export function PostEditorForm({ post, onCancel, onSaved }: PostEditorFormProps)
                 label={t.editing.additionalSettings}
                 open={additionalSettingsOpen}
                 onOpenChange={setAdditionalSettingsOpen}
-                tips={[t.postEditor.tipSlug, t.postEditor.tipSlashBlock, t.postEditor.tipFormat]}
+                tips={editorTips}
               >
                 <form.Field name="slug">
                   {(field) => {
@@ -350,6 +361,8 @@ export function PostEditorForm({ post, onCancel, onSaved }: PostEditorFormProps)
                         <Input
                           id={field.name}
                           value={field.state.value}
+                          // Field render callbacks capture current field state; hooks cannot run inside this callback.
+                          // oxlint-disable-next-line react-perf/jsx-no-new-function-as-prop
                           onChange={(event) => {
                             field.handleChange(event.target.value)
                             markDirty()
@@ -378,6 +391,8 @@ export function PostEditorForm({ post, onCancel, onSaved }: PostEditorFormProps)
                         <Textarea
                           id={field.name}
                           value={field.state.value}
+                          // Field render callbacks capture current field state; hooks cannot run inside this callback.
+                          // oxlint-disable-next-line react-perf/jsx-no-new-function-as-prop
                           onChange={(event) => {
                             field.handleChange(event.target.value)
                             markDirty()
@@ -405,6 +420,8 @@ export function PostEditorForm({ post, onCancel, onSaved }: PostEditorFormProps)
                         id={field.name}
                         type="url"
                         value={field.state.value}
+                        // Field render callbacks capture current field state; hooks cannot run inside this callback.
+                        // oxlint-disable-next-line react-perf/jsx-no-new-function-as-prop
                         onChange={(event) => {
                           field.handleChange(event.target.value)
                           markDirty()
@@ -425,6 +442,8 @@ export function PostEditorForm({ post, onCancel, onSaved }: PostEditorFormProps)
                       <Input
                         id={field.name}
                         value={tagsText}
+                        // Field render callbacks capture current field state; hooks cannot run inside this callback.
+                        // oxlint-disable-next-line react-perf/jsx-no-new-function-as-prop
                         onChange={(event) => {
                           setTagsText(event.target.value)
                           field.handleChange(

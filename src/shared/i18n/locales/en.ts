@@ -2,6 +2,8 @@ import type { Translations } from "./ko"
 
 export const en: Translations = {
   authFlow: {
+    failedTitle: "Unable to sign in",
+    checkingDescription: "Verifying your sign-in. You’ll be taken home when it’s complete.",
     checking: "Checking sign-in",
     failed: "Sign-in could not be completed. Please try again.",
     retry: "Try signing in again",

@@ -1,7 +1,7 @@
 import { REACTION_EMOJIS } from "@entities/reaction"
 import { useT } from "@shared/i18n"
 import { SmilePlusIcon } from "lucide-react"
-import { useState } from "react"
+import { useState, useCallback } from "react"
 
 import { Button } from "./button"
 import { Popover, PopoverContent, PopoverPositioner, PopoverTitle, PopoverTrigger } from "./popover"
@@ -20,10 +20,13 @@ export function ReactionPopover({ summary, onToggle, disabled }: ReactionPopover
   const t = useT()
   const [open, setOpen] = useState(false)
 
-  function selectReaction(emoji: ReactionEmoji) {
-    onToggle?.(emoji)
-    setOpen(false)
-  }
+  const selectReaction = useCallback(
+    (emoji: ReactionEmoji) => {
+      onToggle?.(emoji)
+      setOpen(false)
+    },
+    [onToggle],
+  )
 
   return (
     <div className="flex flex-wrap items-center gap-1">

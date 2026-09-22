@@ -4,6 +4,7 @@ import { formatDate } from "@shared/lib/utils"
 import { Link } from "@tanstack/react-router"
 import { ArrowUpRightIcon } from "lucide-react"
 import { motion } from "motion/react"
+import { useMemo } from "react"
 
 import type { PostSummary } from "@entities/post"
 
@@ -12,14 +13,21 @@ interface PostCardProps {
   index?: number
 }
 
+const POST_CARD_ANIMATE = { opacity: 1, y: 0 }
+const POST_CARD_EASE = [0.16, 1, 0.3, 1] as const
+
 export function PostCard({ post, index = 0 }: PostCardProps) {
   const publishedDate = post.publishedAt ? formatDate(post.publishedAt) : null
+  const transition = useMemo(
+    () => ({ duration: 0.3, delay: index * 0.05, ease: POST_CARD_EASE }),
+    [index],
+  )
 
   return (
     <motion.article
       initial={false}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
+      animate={POST_CARD_ANIMATE}
+      transition={transition}
       className="post-card group relative isolate rounded-xs border border-border bg-card transition-[color,background-color,border-color,box-shadow] duration-200 has-[.post-card-link:hover]:border-primary"
     >
       <div className="min-w-0 flex-1">

@@ -20,7 +20,7 @@ interface AuthGateProps {
 export function SignedIn({ children, fallback = null }: AuthGateProps) {
   const { isSignedIn, isLoading } = useAuth()
   if (isLoading) return null
-  return isSignedIn ? <>{children}</> : <>{fallback}</>
+  return isSignedIn ? children : fallback
 }
 
 /**
@@ -34,7 +34,7 @@ export function SignedIn({ children, fallback = null }: AuthGateProps) {
 export function SignedOut({ children, fallback = null }: AuthGateProps) {
   const { isSignedIn, isLoading } = useAuth()
   if (isLoading) return null
-  return !isSignedIn ? <>{children}</> : <>{fallback}</>
+  return !isSignedIn ? children : fallback
 }
 
 interface RequireOwnerProps {
@@ -56,7 +56,7 @@ export function RequireOwner({ children, fallback }: RequireOwnerProps) {
   const { isOwner, isLoading } = useAuth()
   if (isLoading) return null
   if (!isOwner) {
-    return fallback !== undefined ? <>{fallback}</> : <Navigate to={routes.home} replace />
+    return fallback !== undefined ? fallback : <Navigate to={routes.home} replace />
   }
-  return <>{children}</>
+  return children
 }

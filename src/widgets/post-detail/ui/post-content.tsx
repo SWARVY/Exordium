@@ -67,8 +67,12 @@ function renderNode(node: ContentNode): ReactNode {
   if (node.type === "tab") return "\t"
   const children = Array.isArray(node.children) ? node.children : []
   const rendered = children.map((child, index) => (
+    // Parsed editor nodes do not carry IDs; order is semantic in this read-only renderer.
+    // oxlint-disable-next-line react/no-array-index-key
     <Fragment key={index}>{renderNode(child)}</Fragment>
   ))
+  // Each rendered node owns data-driven inline styles; sharing this object would change layout semantics.
+  // oxlint-disable-next-line react-perf/jsx-no-new-object-as-prop
   const style: CSSProperties = {
     textAlign: ["left", "center", "right", "justify", "start", "end"].includes(String(node.format))
       ? (node.format as CSSProperties["textAlign"])
@@ -89,16 +93,22 @@ function renderNode(node: ContentNode): ReactNode {
     }
     case "quote":
       return (
+        // The style is derived from the parsed node and cannot be shared between nodes.
+        // oxlint-disable-next-line react-perf/jsx-no-new-object-as-prop
         <blockquote style={style} dir={dir}>
           {rendered}
         </blockquote>
       )
     case "paragraph":
       return children.some((child) => child?.type === "image") ? (
+        // The style is derived from the parsed node and cannot be shared between nodes.
+        // oxlint-disable-next-line react-perf/jsx-no-new-object-as-prop
         <div className="post-paragraph" style={style} dir={dir}>
           {rendered}
         </div>
       ) : (
+        // The style is derived from the parsed node and cannot be shared between nodes.
+        // oxlint-disable-next-line react-perf/jsx-no-new-object-as-prop
         <p style={style} dir={dir}>
           {rendered.length ? rendered : <br />}
         </p>
@@ -109,14 +119,15 @@ function renderNode(node: ContentNode): ReactNode {
       const width = typeof node.width === "number" && node.width > 0 ? node.width : undefined
       const alignment =
         node.alignment === "left" || node.alignment === "right" ? node.alignment : "center"
+      // Image sizing and alignment are data-driven for each parsed node.
+      // oxlint-disable-next-line react-perf/jsx-no-new-object-as-prop
+      const figureStyle: CSSProperties = {
+        width: width ?? "fit-content",
+        marginInlineStart: alignment === "left" ? 0 : "auto",
+        marginInlineEnd: alignment === "right" ? 0 : "auto",
+      }
       return (
-        <figure
-          style={{
-            width: width ?? "fit-content",
-            marginInlineStart: alignment === "left" ? 0 : "auto",
-            marginInlineEnd: alignment === "right" ? 0 : "auto",
-          }}
-        >
+        <figure style={figureStyle}>
           <img
             src={src}
             alt={typeof node.alt === "string" ? node.alt : ""}
@@ -147,6 +158,8 @@ export function PostContent({ content }: { content: string }) {
   return (
     <div className="post-content">
       {nodes.map((node, index) => (
+        // Parsed editor nodes do not carry IDs; order is semantic in this read-only renderer.
+        // oxlint-disable-next-line react/no-array-index-key
         <Fragment key={index}>{renderNode(node)}</Fragment>
       ))}
     </div>

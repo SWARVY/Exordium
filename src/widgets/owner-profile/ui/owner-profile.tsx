@@ -7,7 +7,7 @@ import { useWriteActionEditing } from "@shared/ui/providers/write-action-provide
 import { useSuspenseQuery } from "@suspensive/react-query-5"
 import { PencilIcon } from "lucide-react"
 import { motion } from "motion/react"
-import { lazy, Suspense, useState } from "react"
+import { lazy, Suspense, useCallback, useState } from "react"
 
 const OwnerProfileEditForm = lazy(() =>
   import("./owner-profile-edit-form").then(({ OwnerProfileEditForm }) => ({
@@ -15,12 +15,18 @@ const OwnerProfileEditForm = lazy(() =>
   })),
 )
 
+const OWNER_PROFILE_MOTION_ANIMATE = { opacity: 1, y: 0 }
+const OWNER_PROFILE_MOTION_TRANSITION = { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const }
+const OWNER_PROFILE_SKELETON_KEYS = ["skill-1", "skill-2", "skill-3", "skill-4", "skill-5"]
+
 function OwnerProfileContent() {
   const { data: profile } = useSuspenseQuery(ownerQueryOptions.profile())
   const isOwner = useIsOwner()
   const t = useT()
   const [isEditing, setIsEditing] = useState(false)
   useWriteActionEditing(isEditing)
+  const closeEditor = useCallback(() => setIsEditing(false), [])
+  const startEditing = useCallback(() => setIsEditing(true), [])
 
   if (!profile) return null
 
@@ -28,11 +34,7 @@ function OwnerProfileContent() {
     return (
       <div className="py-8">
         <Suspense fallback={<OwnerProfileEditSkeleton label={t.management.profileEditorLoading} />}>
-          <OwnerProfileEditForm
-            profile={profile}
-            onCancel={() => setIsEditing(false)}
-            onSuccess={() => setIsEditing(false)}
-          />
+          <OwnerProfileEditForm profile={profile} onCancel={closeEditor} onSuccess={closeEditor} />
         </Suspense>
       </div>
     )
@@ -43,8 +45,8 @@ function OwnerProfileContent() {
   return (
     <motion.div
       initial={false}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      animate={OWNER_PROFILE_MOTION_ANIMATE}
+      transition={OWNER_PROFILE_MOTION_TRANSITION}
       className="relative section-space flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-16"
     >
       {/* Avatar — chamfered + duotone */}
@@ -131,7 +133,7 @@ function OwnerProfileContent() {
           {isOwner && (
             <button
               type="button"
-              onClick={() => setIsEditing(true)}
+              onClick={startEditing}
               className="ml-auto flex min-h-11 items-center gap-1.5 rounded-sm border-2 border-border px-3 py-1.5 text-sm font-bold text-muted-foreground transition-colors hover:border-primary hover:text-primary-ink"
             >
               <PencilIcon className="size-3" />
@@ -168,8 +170,8 @@ export function OwnerProfileSkeleton() {
         <Skeleton className="h-5 w-full max-w-lg" />
         <Skeleton className="h-5 w-3/4 max-w-lg" />
         <div className="flex gap-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-7 w-16 rounded-full" />
+          {OWNER_PROFILE_SKELETON_KEYS.map((key) => (
+            <Skeleton key={key} className="h-7 w-16 rounded-full" />
           ))}
         </div>
       </div>

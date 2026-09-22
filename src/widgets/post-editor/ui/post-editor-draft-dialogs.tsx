@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@shared/ui/components/dialog"
+import { useCallback } from "react"
 
 import type { DraftDecision } from "../model/use-post-editor-draft-workflow"
 
@@ -38,6 +39,12 @@ export function PostEditorDraftDialogs({
   onKeepDraftAndExit,
 }: PostEditorDraftDialogsProps) {
   const t = useT()
+  const handleExitDialogChange = useCallback(
+    (open: boolean) => {
+      if (!open) onCloseExit()
+    },
+    [onCloseExit],
+  )
 
   return (
     <>
@@ -78,7 +85,7 @@ export function PostEditorDraftDialogs({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={exitDialogOpen} onOpenChange={(open) => !open && onCloseExit()}>
+      <Dialog open={exitDialogOpen} onOpenChange={handleExitDialogChange}>
         <DialogContent showCloseButton={false} className="bg-card">
           <DialogHeader>
             <DialogTitle>{t.editing.exitTitle}</DialogTitle>

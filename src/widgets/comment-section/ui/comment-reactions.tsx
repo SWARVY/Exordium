@@ -3,7 +3,7 @@ import { useToggleCommentReaction } from "@features/toggle-reaction"
 import { useT } from "@shared/i18n"
 import { ReactionPopover } from "@shared/ui/components/reaction-popover"
 import { useQuery } from "@tanstack/react-query"
-import { useRef } from "react"
+import { useCallback, useRef } from "react"
 
 import type { ReactionEmoji } from "@entities/reaction"
 
@@ -16,17 +16,36 @@ export function CommentReactions({ commentId, userId }: CommentReactionsProps) {
   const toggleLockRef = useRef(false)
   const t = useT()
   const reactionQuery = useQuery(reactionQueryOptions.byComment(commentId, userId))
+  const { refetch: refetchReactions } = reactionQuery
   const toggleMutation = useToggleCommentReaction(commentId, userId)
+  const { mutate: toggle } = toggleMutation
 
-  function handleToggle(variables: { emoji: ReactionEmoji; reacted: boolean }) {
-    if (toggleLockRef.current) return
-    toggleLockRef.current = true
-    toggleMutation.mutate(variables, {
-      onSettled: () => {
-        toggleLockRef.current = false
-      },
-    })
-  }
+  const handleToggle = useCallback(
+    (variables: { emoji: ReactionEmoji; reacted: boolean }) => {
+      if (toggleLockRef.current) return
+      toggleLockRef.current = true
+      toggle(variables, {
+        onSettled: () => {
+          toggleLockRef.current = false
+        },
+      })
+    },
+    [toggle],
+  )
+
+  const handleReactionToggle = useCallback(
+    (emoji: ReactionEmoji) => {
+      if (!reactionQuery.data) return
+      handleToggle({ emoji, reacted: reactionQuery.data[emoji].reacted })
+    },
+    [handleToggle, reactionQuery.data],
+  )
+
+  const retryReactions = useCallback(() => void refetchReactions(), [refetchReactions])
+
+  const retryToggle = useCallback(() => {
+    if (toggleMutation.variables) handleToggle(toggleMutation.variables)
+  }, [handleToggle, toggleMutation.variables])
 
   if (reactionQuery.isError) {
     return (
@@ -34,7 +53,7 @@ export function CommentReactions({ commentId, userId }: CommentReactionsProps) {
         <p className="text-sm text-destructive">{t.community.reactionsLoadFailed}</p>
         <button
           type="button"
-          onClick={() => reactionQuery.refetch()}
+          onClick={retryReactions}
           disabled={reactionQuery.isFetching}
           className="min-h-11 px-1 font-mono text-xs font-semibold uppercase tracking-wider text-foreground underline underline-offset-4 disabled:opacity-50"
         >
@@ -50,11 +69,7 @@ export function CommentReactions({ commentId, userId }: CommentReactionsProps) {
     <div className="flex flex-col items-start gap-2">
       <ReactionPopover
         summary={reactionQuery.data}
-        onToggle={
-          userId
-            ? (emoji) => handleToggle({ emoji, reacted: reactionQuery.data[emoji].reacted })
-            : undefined
-        }
+        onToggle={userId ? handleReactionToggle : undefined}
         disabled={!userId || toggleMutation.isPending}
       />
       {toggleMutation.isError && toggleMutation.variables && (
@@ -62,7 +77,7 @@ export function CommentReactions({ commentId, userId }: CommentReactionsProps) {
           <p className="text-sm text-destructive">{t.community.reactionSaveFailed}</p>
           <button
             type="button"
-            onClick={() => handleToggle(toggleMutation.variables)}
+            onClick={retryToggle}
             disabled={toggleMutation.isPending}
             className="min-h-11 px-1 font-mono text-xs font-semibold uppercase tracking-wider text-foreground underline underline-offset-4 disabled:opacity-50"
           >

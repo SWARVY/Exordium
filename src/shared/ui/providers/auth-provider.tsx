@@ -1,6 +1,6 @@
 import { supabase } from "@shared/api/supabase-client"
 import { useQueryClient } from "@tanstack/react-query"
-import { createContext, useEffect, useState } from "react"
+import { createContext, useEffect, useMemo, useState } from "react"
 
 import type { Session } from "@supabase/supabase-js"
 
@@ -69,5 +69,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [queryClient])
 
-  return <AuthContext.Provider value={{ session, isLoading }}>{children}</AuthContext.Provider>
+  const value = useMemo(() => ({ session, isLoading }), [session, isLoading])
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

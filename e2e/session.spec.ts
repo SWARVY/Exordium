@@ -35,8 +35,11 @@ test("reader cannot directly open an editor and an owner request does not leak i
 test("an OAuth cancellation shows recovery instead of a successful redirect", async ({ page }) => {
   await page.goto("/auth/callback?error=access_denied")
   await expect(page.getByRole("alert")).toContainText("로그인을 완료하지 못했어요")
-  await expect(page.getByRole("button", { name: "Login", exact: true }).last()).toBeVisible()
+  const panel = page.getByRole("region", { name: "로그인하지 못했어요" })
+  await expect(panel.getByRole("button", { name: "다시 로그인", exact: true })).toBeEnabled()
   await expect(page).toHaveURL(/\/auth\/callback/)
+  await panel.getByRole("link", { name: "홈으로 돌아가기" }).click()
+  await expect(page).toHaveURL("http://127.0.0.1:4317/")
 })
 
 test("logout removes the owner session from direct routes", async ({ page, actors, loginAs }) => {

@@ -9,7 +9,7 @@ import { FieldError } from "@shared/ui/components/field-error"
 import { Input } from "@shared/ui/components/input"
 import { Label } from "@shared/ui/components/label"
 import { useForm } from "@tanstack/react-form"
-import { useRef } from "react"
+import { useRef, useCallback } from "react"
 
 interface OpenSourceFormProps {
   defaultValues?: Partial<OpenSourceFormType>
@@ -40,17 +40,18 @@ export function OpenSourceForm({
     onSubmit: ({ value }) => onSubmit(value as OpenSourceFormType),
   })
 
+  const handleSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      void form.handleSubmit().then(() => {
+        formRef.current?.querySelector<HTMLElement>("[aria-invalid='true']")?.focus()
+      })
+    },
+    [form],
+  )
+
   return (
-    <form
-      ref={formRef}
-      onSubmit={(e) => {
-        e.preventDefault()
-        void form.handleSubmit().then(() => {
-          formRef.current?.querySelector<HTMLElement>("[aria-invalid='true']")?.focus()
-        })
-      }}
-      className="flex flex-col gap-4"
-    >
+    <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-4">
       <form.Field name="name">
         {(field) => {
           const errorId = `${field.name}-error`
@@ -64,6 +65,8 @@ export function OpenSourceForm({
                 id={field.name}
                 value={field.state.value}
                 onBlur={field.handleBlur}
+                // Field render callbacks capture current field state; hooks cannot run inside this callback.
+                // oxlint-disable-next-line react-perf/jsx-no-new-function-as-prop
                 onChange={(e) => field.handleChange(e.target.value)}
                 placeholder={t.projectForm.namePlaceholder}
                 aria-invalid={invalid}
@@ -88,6 +91,8 @@ export function OpenSourceForm({
                 id={field.name}
                 value={field.state.value}
                 onBlur={field.handleBlur}
+                // Field render callbacks capture current field state; hooks cannot run inside this callback.
+                // oxlint-disable-next-line react-perf/jsx-no-new-function-as-prop
                 onChange={(e) => field.handleChange(e.target.value)}
                 placeholder={t.projectForm.descPlaceholder}
                 aria-invalid={invalid}
@@ -112,6 +117,8 @@ export function OpenSourceForm({
                 id={field.name}
                 value={field.state.value}
                 onBlur={field.handleBlur}
+                // Field render callbacks capture current field state; hooks cannot run inside this callback.
+                // oxlint-disable-next-line react-perf/jsx-no-new-function-as-prop
                 onChange={(e) => field.handleChange(e.target.value)}
                 placeholder="https://github.com/..."
                 aria-invalid={invalid}
@@ -135,6 +142,8 @@ export function OpenSourceForm({
             <Input
               id={field.name}
               value={field.state.value}
+              // Field render callbacks capture current field state; hooks cannot run inside this callback.
+              // oxlint-disable-next-line react-perf/jsx-no-new-function-as-prop
               onChange={(e) => field.handleChange(e.target.value)}
               placeholder="TypeScript"
             />

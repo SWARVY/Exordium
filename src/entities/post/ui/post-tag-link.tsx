@@ -1,6 +1,7 @@
 import { useT } from "@shared/i18n"
 import { cn } from "@shared/lib/utils"
 import { Link } from "@tanstack/react-router"
+import { useMemo } from "react"
 
 interface PostTagLinkProps {
   tag: string
@@ -10,10 +11,11 @@ interface PostTagLinkProps {
 
 export function PostTagLink({ tag, wrap = false, onNavigate }: PostTagLinkProps) {
   const t = useT()
+  const search = useMemo(() => ({ tag }), [tag])
   return (
     <Link
       to="/posts"
-      search={{ tag }}
+      search={search}
       aria-label={t.post.viewTag(tag)}
       onClick={onNavigate}
       className="group/tag relative z-10 flex min-h-11 min-w-11 max-w-full items-center rounded-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"

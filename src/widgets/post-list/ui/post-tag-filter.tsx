@@ -3,6 +3,9 @@ import { buttonVariants } from "@shared/ui/components/button"
 import { Link } from "@tanstack/react-router"
 import { XIcon } from "lucide-react"
 
+const CLEAR_TAG_FILTER_CLASS_NAME = buttonVariants({ variant: "ghost", size: "sm" })
+const CLEAR_TAG_FILTER_SEARCH = {}
+
 export function PostTagFilter({ tag }: { tag: string }) {
   const t = useT()
   return (
@@ -16,7 +19,7 @@ export function PostTagFilter({ tag }: { tag: string }) {
           {tag}
         </span>
       </div>
-      <Link to="/posts" search={{}} className={buttonVariants({ variant: "ghost", size: "sm" })}>
+      <Link to="/posts" search={CLEAR_TAG_FILTER_SEARCH} className={CLEAR_TAG_FILTER_CLASS_NAME}>
         <XIcon aria-hidden="true" className="size-4" />
         {t.post.clearTagFilter}
       </Link>

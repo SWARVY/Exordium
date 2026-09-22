@@ -1,6 +1,7 @@
 import { ToggleGroup } from "@base-ui/react/toggle-group"
 import { REACTION_EMOJIS } from "@entities/reaction"
 import { useT } from "@shared/i18n"
+import { useCallback, useMemo } from "react"
 
 import { ReactionButton } from "./reaction-button"
 
@@ -15,7 +16,19 @@ interface ReactionBarProps {
 
 export function ReactionBar({ summary, onToggle, disabled, label }: ReactionBarProps) {
   const t = useT()
-  const selected = REACTION_EMOJIS.filter((emoji) => summary[emoji].reacted)
+  const selected = useMemo(
+    () => REACTION_EMOJIS.filter((emoji) => summary[emoji].reacted),
+    [summary],
+  )
+  const handleValueChange = useCallback(
+    (values: string[]) => {
+      const changed = REACTION_EMOJIS.find(
+        (emoji) => values.includes(emoji) !== summary[emoji].reacted,
+      )
+      if (changed) onToggle?.(changed)
+    },
+    [summary, onToggle],
+  )
 
   return (
     <ToggleGroup
@@ -23,12 +36,7 @@ export function ReactionBar({ summary, onToggle, disabled, label }: ReactionBarP
       value={selected}
       disabled={disabled}
       aria-label={label ?? t.reaction.label}
-      onValueChange={(values) => {
-        const changed = REACTION_EMOJIS.find(
-          (emoji) => values.includes(emoji) !== summary[emoji].reacted,
-        )
-        if (changed) onToggle?.(changed)
-      }}
+      onValueChange={handleValueChange}
       className="flex w-fit max-w-full flex-wrap items-center gap-1"
     >
       {REACTION_EMOJIS.map((emoji) => (

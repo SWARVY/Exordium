@@ -2,6 +2,7 @@ import { useT } from "@shared/i18n"
 import { Button } from "@shared/ui/components/button"
 import { ConfirmDialog } from "@shared/ui/components/confirm-dialog"
 import { FieldError } from "@shared/ui/components/field-error"
+import { useCallback, useMemo } from "react"
 
 import { useDeleteComment } from "../api/delete-comment-mutation"
 
@@ -21,6 +22,11 @@ export function DeleteCommentButton({
   const t = useT()
   const { mutate: deleteComment, isPending, isError } = useDeleteComment(postId)
   const isReply = kind === "reply"
+  const handleConfirm = useCallback(() => deleteComment(commentId), [commentId, deleteComment])
+  const deleteErrors = useMemo(
+    () => (isError ? [t.community.commentDeleteFailed] : []),
+    [isError, t.community.commentDeleteFailed],
+  )
 
   return (
     <div className="flex flex-col items-start gap-1">
@@ -43,10 +49,10 @@ export function DeleteCommentButton({
         }
         confirmLabel={t.action.delete}
         variant="destructive"
-        onConfirm={() => deleteComment(commentId)}
+        onConfirm={handleConfirm}
         isPending={isPending}
       />
-      <FieldError errors={isError ? [t.community.commentDeleteFailed] : []} />
+      <FieldError errors={deleteErrors} />
     </div>
   )
 }

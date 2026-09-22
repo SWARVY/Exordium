@@ -1,6 +1,6 @@
 import { useT } from "@shared/i18n"
 import { AlertTriangleIcon, TrashIcon } from "lucide-react"
-import { useState } from "react"
+import { useState, useCallback } from "react"
 
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "./dialog"
 
@@ -38,10 +38,11 @@ export function ConfirmDialog({
   const resolvedConfirmLabel = confirmLabel ?? t.form.confirm
   const resolvedCancelLabel = cancelLabel ?? t.form.cancel
 
-  const handleConfirm = () => {
+  const handleConfirm = useCallback(() => {
     onConfirm()
     setOpen(false)
-  }
+  }, [onConfirm])
+  const closeDialog = useCallback(() => setOpen(false), [])
 
   const isDestructive = variant === "destructive"
 
@@ -85,7 +86,7 @@ export function ConfirmDialog({
         <div className="flex gap-2 px-6 pb-6 pt-4">
           <button
             type="button"
-            onClick={() => setOpen(false)}
+            onClick={closeDialog}
             className="min-h-11 flex-1 rounded-xs border border-border bg-background px-4 py-2 font-mono text-sm font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground/40 hover:bg-muted hover:text-foreground"
           >
             {resolvedCancelLabel}

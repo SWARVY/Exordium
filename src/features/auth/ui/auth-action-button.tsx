@@ -1,3 +1,4 @@
+import { buttonVariants } from "@shared/ui/components/button"
 import {
   Tooltip,
   TooltipContent,
@@ -19,8 +20,7 @@ interface AuthActionButtonProps {
 }
 
 const appearance = {
-  default:
-    "inline-flex min-h-11 items-center justify-center rounded-xs border border-border px-3 py-2 font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary hover:text-primary-ink disabled:opacity-50",
+  default: buttonVariants({ variant: "default" }),
   navigation:
     "flex min-h-14 w-full flex-col items-center justify-center gap-1 px-2 py-2 font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50",
   icon: "flex size-11 shrink-0 items-center justify-center rounded-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50",

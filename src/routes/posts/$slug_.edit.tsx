@@ -1,14 +1,14 @@
 import { postQueryOptions } from "@entities/post"
 import { requireOwner } from "@features/auth/api/require-owner"
 import { buildHead } from "@shared/constants/seo"
-import { Skeleton } from "@shared/ui/components/skeleton"
 import { useSuspenseQuery } from "@suspensive/react-query-5"
 import { createFileRoute, notFound } from "@tanstack/react-router"
-import { PostEditorForm } from "@widgets/post-editor"
+import { PostEditorForm, PostEditorSkeleton } from "@widgets/post-editor"
 import { Suspense } from "react"
 
 export const Route = createFileRoute("/posts/$slug_/edit")({
   beforeLoad: requireOwner,
+  pendingComponent: PostEditorSkeleton,
   loader: async ({ params, context }) => {
     const post = await context.queryClient.ensureQueryData(postQueryOptions.detail(params.slug))
     if (!post) throw notFound()
@@ -32,7 +32,7 @@ function EditPostPage() {
   const { slug } = Route.useParams()
 
   return (
-    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+    <Suspense fallback={<PostEditorSkeleton />}>
       <EditPostContent slug={slug} />
     </Suspense>
   )
