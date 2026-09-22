@@ -2,6 +2,9 @@ import { routes } from "@shared/constants/routes"
 import { useT } from "@shared/i18n"
 import { Link, useRouter } from "@tanstack/react-router"
 import { ArrowLeftIcon, RefreshCcwIcon } from "lucide-react"
+import { useCallback } from "react"
+
+import { Button, buttonVariants } from "../button"
 
 interface ErrorPageProps {
   error?: Error
@@ -11,6 +14,10 @@ interface ErrorPageProps {
 export function ErrorPage({ error, reset }: ErrorPageProps) {
   const router = useRouter()
   const t = useT()
+  const retry = useCallback(() => {
+    reset?.()
+    void router.invalidate()
+  }, [reset, router])
 
   return (
     <div className="grid-paper flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center px-6">
@@ -27,29 +34,20 @@ export function ErrorPage({ error, reset }: ErrorPageProps) {
         </p>
 
         {import.meta.env.DEV && error?.message && (
-          <pre className="mt-4 whitespace-pre-wrap break-words rounded-sm border border-border bg-muted/50 px-4 py-3 text-left font-mono text-[11px] leading-relaxed text-muted-foreground">
-            {error.message}
-          </pre>
+          <details className="mt-4 text-left text-xs text-muted-foreground">
+            <summary className="cursor-pointer font-mono">Debug</summary>
+            <pre className="mt-2 whitespace-pre-wrap break-words">{error.message}</pre>
+          </details>
         )}
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           {reset && (
-            <button
-              type="button"
-              onClick={() => {
-                reset()
-                router.invalidate()
-              }}
-              className="inline-flex min-h-11 items-center gap-2 rounded-sm bg-primary px-5 py-2.5 font-mono text-xs font-medium uppercase tracking-wider text-primary-foreground transition-opacity hover:opacity-90"
-            >
+            <Button type="button" onClick={retry}>
               <RefreshCcwIcon className="size-3" />
               {t.action.retry}
-            </button>
+            </Button>
           )}
-          <Link
-            to={routes.home}
-            className="inline-flex min-h-11 items-center gap-2 rounded-sm border border-border px-5 py-2.5 font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary hover:text-primary-ink"
-          >
+          <Link to={routes.home} className={buttonVariants({ variant: "outline" })}>
             <ArrowLeftIcon className="size-3" />
             {t.action.backHome}
           </Link>

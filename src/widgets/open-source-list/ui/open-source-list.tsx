@@ -19,7 +19,7 @@ import { useIsOwner } from "@shared/hooks/use-is-owner"
 import { useT } from "@shared/i18n"
 import { AsyncBoundary } from "@shared/ui/components/async-boundary"
 import { useSuspenseQuery } from "@suspensive/react-query-5"
-import { useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import { OpenSourceCard, OpenSourceCardContent } from "./open-source-card"
 import { OpenSourceSkeleton } from "./open-source-skeleton"
@@ -40,52 +40,76 @@ function OpenSourceListContent() {
   const [activeItem, setActiveItem] = useState<OpenSource | null>(null)
   const [moveStatus, setMoveStatus] = useState("")
 
-  const items = [...data].sort((a, b) => a.order - b.order)
+  const items = useMemo(() => [...data].sort((a, b) => a.order - b.order), [data])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
 
-  function handleDragStart(event: DragStartEvent) {
-    const found = items.find((i) => i.id === event.active.id)
-    setActiveItem(found ?? null)
-  }
+  const moveItem = useCallback(
+    (oldIndex: number, newIndex: number) => {
+      if (
+        isReordering ||
+        oldIndex < 0 ||
+        newIndex < 0 ||
+        oldIndex >= items.length ||
+        newIndex >= items.length ||
+        oldIndex === newIndex
+      ) {
+        return
+      }
+      const reordered = arrayMove(items, oldIndex, newIndex).map((item, idx) => ({
+        ...item,
+        order: idx,
+      }))
 
-  function moveItem(oldIndex: number, newIndex: number) {
-    if (
-      isReordering ||
-      oldIndex < 0 ||
-      newIndex < 0 ||
-      oldIndex >= items.length ||
-      newIndex >= items.length ||
-      oldIndex === newIndex
-    ) {
-      return
-    }
-    const reordered = arrayMove(items, oldIndex, newIndex).map((item, idx) => ({
-      ...item,
-      order: idx,
-    }))
+      setMoveStatus(t.management.projectMoved(reordered[newIndex].name, newIndex + 1, items.length))
+      reorder(reordered.map(({ id, order }) => ({ id, order })))
+    },
+    [isReordering, items, reorder, t],
+  )
 
-    setMoveStatus(t.management.projectMoved(reordered[newIndex].name, newIndex + 1, items.length))
-    reorder(reordered.map(({ id, order }) => ({ id, order })))
-  }
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const found = items.find((i) => i.id === event.active.id)
+      setActiveItem(found ?? null)
+    },
+    [items],
+  )
 
-  function handleDragEnd(event: DragEndEvent) {
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      setActiveItem(null)
+
+      const { active, over } = event
+      if (!over || active.id === over.id) return
+      moveItem(
+        items.findIndex((item) => item.id === active.id),
+        items.findIndex((item) => item.id === over.id),
+      )
+    },
+    [items, moveItem],
+  )
+
+  const handleDragCancel = useCallback(() => {
     setActiveItem(null)
+  }, [])
 
-    const { active, over } = event
-    if (!over || active.id === over.id) return
-    moveItem(
-      items.findIndex((item) => item.id === active.id),
-      items.findIndex((item) => item.id === over.id),
-    )
-  }
-
-  function handleDragCancel() {
-    setActiveItem(null)
-  }
+  const itemIds = useMemo(() => items.map((item) => item.id), [items])
+  const itemMoveHandlers = useMemo(() => {
+    const handlers = new Map<string, { up: () => void; down: () => void }>()
+    items.forEach((item, index) => {
+      handlers.set(item.id, {
+        up: () => moveItem(index, index - 1),
+        down: () => moveItem(index, index + 1),
+      })
+    })
+    return handlers
+  }, [items, moveItem])
+  const retryReorder = useCallback(() => {
+    if (lastReorder) reorder(lastReorder)
+  }, [lastReorder, reorder])
 
   return (
     <section aria-label={t.nav.projects} aria-busy={isReordering}>
@@ -110,18 +134,18 @@ function OpenSourceListContent() {
           onDragEnd={handleDragEnd}
           onDragCancel={handleDragCancel}
         >
-          <SortableContext items={items.map((i) => i.id)} strategy={rectSortingStrategy}>
+          <SortableContext items={itemIds} strategy={rectSortingStrategy}>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {items.map((item) => (
+              {items.map((item, index) => (
                 <OpenSourceCard
                   key={item.id}
                   item={item}
                   isDndEnabled={isOwner && !isReordering}
                   isReordering={isReordering}
-                  onMoveUp={() => moveItem(items.indexOf(item), items.indexOf(item) - 1)}
-                  onMoveDown={() => moveItem(items.indexOf(item), items.indexOf(item) + 1)}
-                  isFirst={items.indexOf(item) === 0}
-                  isLast={items.indexOf(item) === items.length - 1}
+                  onMoveUp={itemMoveHandlers.get(item.id)?.up}
+                  onMoveDown={itemMoveHandlers.get(item.id)?.down}
+                  isFirst={index === 0}
+                  isLast={index === items.length - 1}
                 />
               ))}
             </div>
@@ -151,7 +175,7 @@ function OpenSourceListContent() {
               </p>
               <button
                 type="button"
-                onClick={() => lastReorder && reorder(lastReorder)}
+                onClick={retryReorder}
                 disabled={!lastReorder}
                 className="min-h-11 px-2 font-mono text-sm font-bold text-foreground underline decoration-2 underline-offset-4 hover:text-primary-ink disabled:opacity-40"
               >

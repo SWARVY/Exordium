@@ -22,6 +22,8 @@ function SelectValue({
 
   return (
     <SelectPrimitive.Value
+      // Base UI supplies current value to its render prop; it is not a memoized child callback.
+      // oxlint-disable-next-line react-perf/jsx-no-new-function-as-prop
       render={(_, { value }) => {
         if (value) {
           return <SelectPrimitive.Value data-slot="select-value" {...props} />

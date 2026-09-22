@@ -1,5 +1,5 @@
 import { COLOR_PALETTES, DEFAULT_PALETTE_ID } from "@shared/constants/themes"
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useMemo, useState } from "react"
 
 import type { ThemeMode } from "@shared/model/theme-schema"
 
@@ -109,12 +109,10 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     applyPalette(paletteId, mode)
   }, [mode, paletteId, ready])
 
-  const setMode = (newMode: ThemeMode) => setModeState(newMode)
-  const setPaletteId = (id: string) => setPaletteIdState(id)
-
-  return (
-    <ThemeContext.Provider value={{ mode, paletteId, setMode, setPaletteId }}>
-      {children}
-    </ThemeContext.Provider>
+  const value = useMemo(
+    () => ({ mode, paletteId, setMode: setModeState, setPaletteId: setPaletteIdState }),
+    [mode, paletteId],
   )
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }

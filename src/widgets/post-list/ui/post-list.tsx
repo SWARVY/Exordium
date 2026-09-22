@@ -4,12 +4,47 @@ import { useT } from "@shared/i18n"
 import { AsyncBoundary } from "@shared/ui/components/async-boundary"
 import { Button } from "@shared/ui/components/button"
 import { SuspenseInfiniteQuery } from "@suspensive/react-query-5"
+import { useCallback } from "react"
 
 import { PostCard } from "./post-card"
 import { PostListSkeleton } from "./post-list-skeleton"
 
 interface PostListProps {
   tag?: string
+}
+
+interface PostListLoadMoreButtonProps {
+  fetchNextPage: () => Promise<unknown>
+  hydrated: boolean
+  isFetchingNextPage: boolean
+  loadingLabel: string
+  loadMoreLabel: string
+  ariaLabel: string
+}
+
+function PostListLoadMoreButton({
+  fetchNextPage,
+  hydrated,
+  isFetchingNextPage,
+  loadingLabel,
+  loadMoreLabel,
+  ariaLabel,
+}: PostListLoadMoreButtonProps) {
+  const handleClick = useCallback(() => {
+    void fetchNextPage()
+  }, [fetchNextPage])
+
+  return (
+    <Button
+      variant="outline"
+      onClick={handleClick}
+      disabled={!hydrated || isFetchingNextPage}
+      aria-label={ariaLabel}
+      className="rounded-full border-primary font-mono text-xs uppercase tracking-widest text-primary-ink hover:bg-primary hover:text-primary-foreground"
+    >
+      {isFetchingNextPage ? loadingLabel : loadMoreLabel}
+    </Button>
+  )
 }
 
 export function PostList({ tag }: PostListProps) {
@@ -49,15 +84,14 @@ export function PostList({ tag }: PostListProps) {
               </ul>
               {hasNextPage && (
                 <div className="mt-10 flex justify-center">
-                  <Button
-                    variant="outline"
-                    onClick={() => fetchNextPage()}
-                    disabled={!hydrated || isFetchingNextPage}
-                    aria-label={t.aria.loadMore}
-                    className="rounded-full border-primary font-mono text-xs uppercase tracking-widest text-primary-ink hover:bg-primary hover:text-primary-foreground"
-                  >
-                    {isFetchingNextPage ? t.action.loading : t.action.loadMore}
-                  </Button>
+                  <PostListLoadMoreButton
+                    fetchNextPage={fetchNextPage}
+                    hydrated={hydrated}
+                    isFetchingNextPage={isFetchingNextPage}
+                    loadingLabel={t.action.loading}
+                    loadMoreLabel={t.action.loadMore}
+                    ariaLabel={t.aria.loadMore}
+                  />
                 </div>
               )}
             </section>

@@ -1,6 +1,7 @@
 import { useHydrated } from "@shared/hooks/use-hydrated"
 import { useT } from "@shared/i18n"
 import { LogOutIcon } from "lucide-react"
+import { useCallback } from "react"
 
 import { useSignOut } from "../model/use-auth"
 import { AuthActionButton, type AuthButtonVariant } from "./auth-action-button"
@@ -9,6 +10,7 @@ export function LogoutButton({ variant = "default" }: { variant?: AuthButtonVari
   const { mutate: signOut, isPending } = useSignOut()
   const t = useT()
   const hydrated = useHydrated()
+  const handleClick = useCallback(() => signOut(), [signOut])
 
   return (
     <AuthActionButton
@@ -17,7 +19,7 @@ export function LogoutButton({ variant = "default" }: { variant?: AuthButtonVari
       label={t.action.logout}
       pendingLabel={t.action.loading}
       isPending={isPending}
-      onClick={() => signOut()}
+      onClick={handleClick}
       disabled={!hydrated}
     />
   )

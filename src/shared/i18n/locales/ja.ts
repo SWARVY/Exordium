@@ -2,6 +2,8 @@ import type { Translations } from "./ko"
 
 export const ja: Translations = {
   authFlow: {
+    failedTitle: "ログインできませんでした",
+    checkingDescription: "ログイン情報を確認しています。完了するとホームに移動します。",
     checking: "ログインを確認中",
     failed: "ログインを完了できませんでした。もう一度お試しください。",
     retry: "もう一度ログイン",

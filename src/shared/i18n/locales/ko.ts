@@ -1,5 +1,7 @@
 export const ko = {
   authFlow: {
+    failedTitle: "로그인하지 못했어요",
+    checkingDescription: "로그인 정보를 확인하고 있어요. 완료되면 홈으로 이동해요.",
     checking: "로그인 확인 중",
     failed: "로그인을 완료하지 못했어요. 다시 시도해 주세요.",
     retry: "다시 로그인",

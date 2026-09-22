@@ -2,9 +2,14 @@ import { commentQueryOptions } from "@entities/comment"
 import { useT } from "@shared/i18n"
 import { useQuery } from "@tanstack/react-query"
 import { MessageSquareIcon } from "lucide-react"
+import { useCallback } from "react"
 
 import { CommentItem } from "./comment-item"
 import { CommentSkeleton } from "./comment-skeleton"
+
+import type { Comment } from "@entities/comment"
+
+const EMPTY_REPLIES: Comment[] = []
 
 interface CommentListProps {
   postId: string
@@ -19,6 +24,7 @@ export function CommentList({ postId }: CommentListProps) {
     isFetching,
     refetch,
   } = useQuery(commentQueryOptions.byPost(postId))
+  const retryComments = useCallback(() => void refetch(), [refetch])
 
   if (isPending) return <CommentSkeleton />
 
@@ -31,7 +37,7 @@ export function CommentList({ postId }: CommentListProps) {
         <p className="text-sm leading-relaxed text-destructive">{t.community.commentsLoadFailed}</p>
         <button
           type="button"
-          onClick={() => refetch()}
+          onClick={retryComments}
           disabled={isFetching}
           className="min-h-11 rounded-sm border border-input bg-background px-4 font-mono text-xs font-semibold uppercase tracking-wider text-foreground transition-colors hover:border-primary hover:text-primary-ink disabled:cursor-wait disabled:opacity-50"
         >
@@ -67,7 +73,7 @@ export function CommentList({ postId }: CommentListProps) {
         <li key={comment.id}>
           <CommentItem
             comment={comment}
-            replies={repliesMap.get(comment.id) ?? []}
+            replies={repliesMap.get(comment.id) ?? EMPTY_REPLIES}
             postId={postId}
           />
         </li>

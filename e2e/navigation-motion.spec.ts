@@ -130,10 +130,11 @@ test("reduced motion and unsupported view transitions keep navigation usable", a
   await page.getByRole("link", { name: post.title, exact: true }).click()
   await expect(page.getByRole("heading", { name: post.title, exact: true })).toBeVisible()
   expect(await page.evaluate(() => window.transitionCalls)).toBe(0)
+  await expect(page.locator("html")).not.toHaveClass(/lenis/)
   await page.mouse.move(700, 400)
   await page.mouse.wheel(0, 200)
-  await page.waitForTimeout(50)
-  expect(await page.evaluate(() => scrollY)).toBe(200)
+  // Native wheel delivery is asynchronous; a loaded runner can exceed a fixed 50ms delay.
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(200)
   await page.evaluate(() =>
     Object.defineProperty(document, "startViewTransition", { value: undefined }),
   )

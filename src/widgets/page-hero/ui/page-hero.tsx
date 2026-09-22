@@ -6,7 +6,7 @@ import { fieldErrorMessage } from "@shared/lib/field-error"
 import { FieldError } from "@shared/ui/components/field-error"
 import { useSuspenseQuery } from "@suspensive/react-query-5"
 import { CheckIcon, PencilIcon, XIcon } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import type { SiteConfig } from "@entities/site-config"
 
@@ -32,37 +32,53 @@ export function PageHero({ tag, title, subtitleKey }: PageHeroProps) {
   const [draft, setDraft] = useState("")
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const errorId = `site-subtitle-${subtitleKey}-error`
+  const updateErrors = useMemo(() => [updateError], [updateError])
 
   useEffect(() => {
     if (updateError) inputRef.current?.focus()
   }, [updateError])
 
-  function startEdit() {
+  const startEdit = useCallback(() => {
     resetUpdate()
     setDraft(config[subtitleKey])
     setIsEditing(true)
     setTimeout(() => inputRef.current?.focus(), 0)
-  }
+  }, [resetUpdate, config, subtitleKey])
 
-  function handleSave() {
+  const handleSave = useCallback(() => {
     const trimmed = draft.trim()
     if (!trimmed || trimmed === config[subtitleKey]) {
       setIsEditing(false)
       return
     }
     updateConfig({ [subtitleKey]: trimmed }, { onSuccess: () => setIsEditing(false) })
-  }
+  }, [draft, config, subtitleKey, updateConfig])
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSave()
-    }
-    if (e.key === "Escape") {
-      resetUpdate()
-      setIsEditing(false)
-    }
-  }
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault()
+        handleSave()
+      }
+      if (e.key === "Escape") {
+        resetUpdate()
+        setIsEditing(false)
+      }
+    },
+    [handleSave, resetUpdate],
+  )
+
+  const changeDraft = useCallback(
+    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+      if (updateError) resetUpdate()
+      setDraft(event.target.value)
+    },
+    [updateError, resetUpdate],
+  )
+  const cancelEdit = useCallback(() => {
+    resetUpdate()
+    setIsEditing(false)
+  }, [resetUpdate])
 
   return (
     <section className="grid-paper border-b border-border" aria-label={t.aria.pageHeader(title)}>
@@ -78,10 +94,7 @@ export function PageHero({ tag, title, subtitleKey }: PageHeroProps) {
                 <textarea
                   ref={inputRef}
                   value={draft}
-                  onChange={(e) => {
-                    if (updateError) resetUpdate()
-                    setDraft(e.target.value)
-                  }}
+                  onChange={changeDraft}
                   onKeyDown={handleKeyDown}
                   rows={2}
                   aria-label={t.community.subtitleInput}
@@ -101,10 +114,7 @@ export function PageHero({ tag, title, subtitleKey }: PageHeroProps) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
-                      resetUpdate()
-                      setIsEditing(false)
-                    }}
+                    onClick={cancelEdit}
                     aria-label={t.action.cancel}
                     className="flex size-11 items-center justify-center rounded-sm border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
                   >
@@ -112,7 +122,7 @@ export function PageHero({ tag, title, subtitleKey }: PageHeroProps) {
                   </button>
                 </div>
               </div>
-              <FieldError errors={[updateError]} id={errorId} />
+              <FieldError errors={updateErrors} id={errorId} />
             </div>
           ) : (
             <>

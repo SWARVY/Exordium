@@ -10,7 +10,7 @@ import { notFound, useNavigate } from "@tanstack/react-router"
 import { CommentSection } from "@widgets/comment-section"
 import { BookOpenIcon, CalendarIcon, PencilIcon } from "lucide-react"
 import { motion } from "motion/react"
-import { lazy, Suspense, useState } from "react"
+import { lazy, Suspense, useCallback, useState } from "react"
 
 import { PostContent, estimateReadingTime } from "./post-content"
 import { PostDetailSkeleton } from "./post-detail-skeleton"
@@ -22,6 +22,12 @@ interface PostDetailProps {
 
 const InlineEditForm = lazy(() => import("./post-inline-editor"))
 
+const POST_DETAIL_MOTION_ANIMATE = { opacity: 1, y: 0 }
+const POST_DETAIL_MOTION_TRANSITION = { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const }
+const POST_DETAIL_EDIT_MOTION_INITIAL = { opacity: 0 }
+const POST_DETAIL_EDIT_MOTION_ANIMATE = { opacity: 1 }
+const POST_DETAIL_EDIT_MOTION_TRANSITION = { duration: 0.2 }
+
 // ── 뷰 모드 ──────────────────────────────────────────────────────
 function PostDetailContent({ slug }: PostDetailProps) {
   const t = useT()
@@ -29,6 +35,12 @@ function PostDetailContent({ slug }: PostDetailProps) {
   const isOwner = useIsOwner()
   const navigate = useNavigate()
   const [isEditing, setIsEditing] = useState(false)
+  const closeEditor = useCallback(() => setIsEditing(false), [])
+  const startEditor = useCallback(() => setIsEditing(true), [])
+  const handleDeleteSuccess = useCallback(
+    () => navigate({ to: routes.posts.list, replace: true }),
+    [navigate],
+  )
 
   if (!post) throw notFound()
 
@@ -38,13 +50,13 @@ function PostDetailContent({ slug }: PostDetailProps) {
 
   if (isEditing) {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
+      <motion.div
+        initial={POST_DETAIL_EDIT_MOTION_INITIAL}
+        animate={POST_DETAIL_EDIT_MOTION_ANIMATE}
+        transition={POST_DETAIL_EDIT_MOTION_TRANSITION}
+      >
         <Suspense fallback={<PostDetailSkeleton />}>
-          <InlineEditForm
-            post={post}
-            onCancel={() => setIsEditing(false)}
-            onSaved={() => setIsEditing(false)}
-          />
+          <InlineEditForm post={post} onCancel={closeEditor} onSaved={closeEditor} />
         </Suspense>
       </motion.div>
     )
@@ -53,8 +65,8 @@ function PostDetailContent({ slug }: PostDetailProps) {
   return (
     <motion.div
       initial={false}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      animate={POST_DETAIL_MOTION_ANIMATE}
+      transition={POST_DETAIL_MOTION_TRANSITION}
     >
       {/* ── Hero header ── */}
       <div className="grid-paper border-b border-border">
@@ -87,16 +99,13 @@ function PostDetailContent({ slug }: PostDetailProps) {
               <div className="ml-auto flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setIsEditing(true)}
+                  onClick={startEditor}
                   className="flex min-h-11 items-center gap-1.5 rounded-xs border border-border px-3 py-1 font-mono text-sm font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary hover:text-primary-ink"
                 >
                   <PencilIcon className="size-3" />
                   {t.action.edit}
                 </button>
-                <DeletePostButton
-                  postId={post.id}
-                  onSuccess={() => navigate({ to: routes.posts.list, replace: true })}
-                />
+                <DeletePostButton postId={post.id} onSuccess={handleDeleteSuccess} />
               </div>
             )}
           </div>

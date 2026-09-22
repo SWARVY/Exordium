@@ -61,42 +61,57 @@ export function SkillOrderField({ skills, onChange }: SkillOrderFieldProps) {
     useSensor(KeyboardSensor, { coordinateGetter: keyboardCoordinates }),
   )
 
-  function moveSkill(from: number, to: number) {
-    if (from < 0 || to < 0 || from >= skills.length || to >= skills.length || from === to) return
-    const next = arrayMove(skills, from, to)
-    onChange(next)
-    setStatus(t.management.skillMoved(next[to], to + 1, next.length))
-  }
+  const moveSkill = useCallback(
+    (from: number, to: number) => {
+      if (from < 0 || to < 0 || from >= skills.length || to >= skills.length || from === to) return
+      const next = arrayMove(skills, from, to)
+      onChange(next)
+      setStatus(t.management.skillMoved(next[to], to + 1, next.length))
+    },
+    [onChange, skills, t],
+  )
 
-  function handleDragEnd(event: DragEndEvent) {
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      setActiveSkill(null)
+      const targetIndex = keyboardTargetIndex.current
+      keyboardTargetIndex.current = null
+      const { active, over } = event
+
+      if (event.activatorEvent.type === "keydown") {
+        if (targetIndex !== null) moveSkill(skills.indexOf(String(active.id)), targetIndex)
+        return
+      }
+
+      if (!over || active.id === over.id) return
+      moveSkill(skills.indexOf(String(active.id)), skills.indexOf(String(over.id)))
+    },
+    [moveSkill, skills],
+  )
+
+  const handleDragCancel = useCallback(() => {
     setActiveSkill(null)
-    const targetIndex = keyboardTargetIndex.current
     keyboardTargetIndex.current = null
-    const { active, over } = event
+  }, [])
 
-    if (event.activatorEvent.type === "keydown") {
-      if (targetIndex !== null) moveSkill(skills.indexOf(String(active.id)), targetIndex)
-      return
-    }
-
-    if (!over || active.id === over.id) return
-    moveSkill(skills.indexOf(String(active.id)), skills.indexOf(String(over.id)))
-  }
-
-  function handleDragCancel() {
-    setActiveSkill(null)
+  const handleDragStart = useCallback((event: DragStartEvent) => {
     keyboardTargetIndex.current = null
-  }
+    setActiveSkill(String(event.active.id))
+  }, [])
+
+  const handleRemove = useCallback(
+    (skill: string) => {
+      onChange(skills.filter((item) => item !== skill))
+    },
+    [onChange, skills],
+  )
 
   return (
     <>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
-        onDragStart={(event: DragStartEvent) => {
-          keyboardTargetIndex.current = null
-          setActiveSkill(String(event.active.id))
-        }}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
@@ -109,7 +124,7 @@ export function SkillOrderField({ skills, onChange }: SkillOrderFieldProps) {
                 index={index}
                 count={skills.length}
                 onMove={moveSkill}
-                onRemove={() => onChange(skills.filter((item) => item !== skill))}
+                onRemove={handleRemove}
               />
             ))}
           </div>

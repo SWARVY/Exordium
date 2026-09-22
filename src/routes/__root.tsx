@@ -25,7 +25,7 @@ import { Toaster } from "sonner"
 
 import appCss from "../styles.css?url"
 
-const themeInitScript = getThemeInitScript()
+const themeInitHtml = { __html: getThemeInitScript() }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   notFoundComponent: NotFoundPage,
@@ -55,6 +55,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   component: RootLayout,
 })
 
+const toastOptions = {
+  unstyled: true,
+  classNames: {
+    toast: [
+      "flex w-[min(356px,calc(100vw-2rem))] items-center gap-3",
+      "rounded-xs border border-input bg-card",
+      "px-4 py-3",
+    ].join(" "),
+    icon: "shrink-0 flex items-center justify-center size-4 text-muted-foreground",
+    content: "flex min-w-0 flex-1 flex-col gap-0.5",
+    title: "font-mono text-sm font-medium text-foreground",
+    description: "font-mono text-xs text-muted-foreground",
+    success: "[&_[data-icon]]:text-primary",
+    error: "border-destructive/30 [&_[data-icon]]:text-destructive",
+  },
+}
+const mobileToastOffset = { top: 80, left: 16, right: 16 }
+
 function SonnerToaster() {
   const { mode } = useThemeContext()
   return (
@@ -62,23 +80,8 @@ function SonnerToaster() {
       theme={mode}
       position="top-right"
       offset={80}
-      mobileOffset={{ top: 80, left: 16, right: 16 }}
-      toastOptions={{
-        unstyled: true,
-        classNames: {
-          toast: [
-            "flex w-[min(356px,calc(100vw-2rem))] items-center gap-3",
-            "rounded-xs border border-input bg-card",
-            "px-4 py-3",
-          ].join(" "),
-          icon: "shrink-0 flex items-center justify-center size-4 text-muted-foreground",
-          content: "flex min-w-0 flex-1 flex-col gap-0.5",
-          title: "font-mono text-sm font-medium text-foreground",
-          description: "font-mono text-xs text-muted-foreground",
-          success: "[&_[data-icon]]:text-primary",
-          error: "border-destructive/30 [&_[data-icon]]:text-destructive",
-        },
-      }}
+      mobileOffset={mobileToastOffset}
+      toastOptions={toastOptions}
     />
   )
 }
@@ -87,7 +90,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        {/* Static theme bootstrap built only from repository-owned palette constants, never user HTML. */}
+        {/* oxlint-disable-next-line react/no-danger */}
+        <script dangerouslySetInnerHTML={themeInitHtml} />
         <HeadContent />
       </head>
       <body>
@@ -98,8 +103,18 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   )
 }
 
+const devtoolPlugins = [
+  {
+    name: "TanStack Router",
+    render: <TanStackRouterDevtoolsPanel />,
+  },
+  { name: "TanStack Query", render: <ReactQueryDevtoolsPanel /> },
+]
+const devtoolConfig = { position: "bottom-left" as const }
+
 function RootLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const isAuthPage = pathname === "/auth/callback"
   const isEditorPage = pathname === "/posts/new" || pathname.endsWith("/edit")
 
   return (
@@ -112,25 +127,22 @@ function RootLayout() {
               <SonnerToaster />
               <div className="flex min-h-screen flex-col bg-background text-foreground">
                 <Header />
-                <main className="page-content flex-1">
+                <main
+                  className={
+                    isAuthPage
+                      ? "page-content grid-paper flex flex-1 items-center justify-center px-[clamp(1rem,5vw,1.5rem)] py-12 sm:pb-28 sm:pt-16"
+                      : "page-content flex-1"
+                  }
+                >
                   <Outlet />
                 </main>
-                <Footer />
-                <div className="h-16 sm:hidden" aria-hidden="true" />
-                <BottomNav />
-                {!isEditorPage && <WriteFab />}
+                {!isAuthPage && <Footer />}
+                {!isAuthPage && <div className="h-16 sm:hidden" aria-hidden="true" />}
+                {!isAuthPage && <BottomNav />}
+                {!isEditorPage && !isAuthPage && <WriteFab />}
               </div>
               {import.meta.env.DEV && (
-                <TanStackDevtools
-                  config={{ position: "bottom-left" }}
-                  plugins={[
-                    {
-                      name: "TanStack Router",
-                      render: <TanStackRouterDevtoolsPanel />,
-                    },
-                    { name: "TanStack Query", render: <ReactQueryDevtoolsPanel /> },
-                  ]}
-                />
+                <TanStackDevtools config={devtoolConfig} plugins={devtoolPlugins} />
               )}
             </MotionConfig>
           </WriteActionProvider>

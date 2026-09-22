@@ -1,5 +1,6 @@
 import { useT } from "@shared/i18n"
 import { ConfirmDialog } from "@shared/ui/components/confirm-dialog"
+import { useCallback } from "react"
 
 import { useDeletePost } from "../api/delete-post-mutation"
 
@@ -12,9 +13,9 @@ export function DeletePostButton({ postId, onSuccess }: DeletePostButtonProps) {
   const { mutate: deletePost, isPending } = useDeletePost()
   const t = useT()
 
-  const handleConfirm = () => {
+  const handleConfirm = useCallback(() => {
     deletePost(postId, { onSuccess })
-  }
+  }, [deletePost, onSuccess, postId])
 
   return (
     <ConfirmDialog

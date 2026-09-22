@@ -12,6 +12,7 @@ import {
   DropdownMenuRadioItem,
 } from "@shared/ui/components/dropdown-menu"
 import { MoonIcon, SunIcon } from "lucide-react"
+import { useCallback } from "react"
 
 import type { Locale } from "@shared/i18n"
 
@@ -26,6 +27,8 @@ export function ThemeSelector() {
   const { locale, setLocale } = useLocale()
   const t = useT()
   const hydrated = useHydrated()
+  const toggleMode = useCallback(() => setMode(mode === "dark" ? "light" : "dark"), [mode, setMode])
+  const handleLocaleChange = useCallback((value: string) => setLocale(value as Locale), [setLocale])
 
   return (
     <DropdownMenu>
@@ -43,10 +46,7 @@ export function ThemeSelector() {
       <DropdownMenuPositioner>
         <DropdownMenuContent>
           {/* Mode toggle */}
-          <DropdownMenuItem
-            onClick={() => setMode(mode === "dark" ? "light" : "dark")}
-            className="min-h-[44px] gap-2.5"
-          >
+          <DropdownMenuItem onClick={toggleMode} className="min-h-[44px] gap-2.5">
             {mode === "dark" ? (
               <SunIcon className="size-3 text-muted-foreground" />
             ) : (
@@ -77,6 +77,7 @@ export function ThemeSelector() {
               >
                 <span
                   className="size-3 shrink-0 rounded-full"
+                  // oxlint-disable-next-line react-perf/jsx-no-new-object-as-prop -- each palette swatch needs its data-dependent color
                   style={{ backgroundColor: palette.primary }}
                   aria-hidden="true"
                 />
@@ -96,7 +97,7 @@ export function ThemeSelector() {
           {/* Languages */}
           <DropdownMenuRadioGroup
             value={locale}
-            onValueChange={(value) => setLocale(value as Locale)}
+            onValueChange={handleLocaleChange}
             aria-label={t.theme.language}
           >
             {LOCALES.map((loc) => (

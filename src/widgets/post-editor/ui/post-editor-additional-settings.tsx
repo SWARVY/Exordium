@@ -1,4 +1,5 @@
 import { ChevronDownIcon, SlidersHorizontalIcon } from "lucide-react"
+import { useCallback } from "react"
 
 import type { ReactNode } from "react"
 
@@ -18,6 +19,7 @@ export function PostEditorAdditionalSettings({
   tips,
 }: PostEditorAdditionalSettingsProps) {
   const panelId = "post-editor-additional-settings"
+  const toggle = useCallback(() => onOpenChange(!open), [onOpenChange, open])
 
   return (
     <aside className="min-w-0 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1">
@@ -25,7 +27,7 @@ export function PostEditorAdditionalSettings({
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => onOpenChange(!open)}
+        onClick={toggle}
         className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xs border border-border bg-card px-3 py-3 text-left text-sm font-semibold text-foreground"
       >
         <span className="flex items-center gap-2">

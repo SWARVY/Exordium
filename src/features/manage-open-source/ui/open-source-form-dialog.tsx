@@ -8,7 +8,7 @@ import {
   DialogTrigger,
 } from "@shared/ui/components/dialog"
 import { PlusIcon, PencilIcon } from "lucide-react"
-import { useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import { useCreateOpenSource, useUpdateOpenSource } from "../api/open-source-mutations"
 import { OpenSourceForm } from "./open-source-form"
@@ -28,22 +28,31 @@ export function OpenSourceFormDialog({ mode, item }: OpenSourceFormDialogProps) 
 
   const isPending = isCreating || isUpdating
 
-  const handleSubmit = (values: OpenSourceFormType) => {
-    if (mode === "create") {
-      create(values, { onSuccess: () => setOpen(false) })
-    } else if (item) {
-      update({ id: item.id, form: values }, { onSuccess: () => setOpen(false) })
-    }
-  }
+  const closeDialog = useCallback(() => setOpen(false), [])
 
-  const defaultValues = item
-    ? {
-        name: item.name,
-        description: item.description,
-        repoUrl: item.repoUrl,
-        language: item.language ?? "",
+  const handleSubmit = useCallback(
+    (values: OpenSourceFormType) => {
+      if (mode === "create") {
+        create(values, { onSuccess: closeDialog })
+      } else if (item) {
+        update({ id: item.id, form: values }, { onSuccess: closeDialog })
       }
-    : undefined
+    },
+    [closeDialog, create, item, mode, update],
+  )
+
+  const defaultValues = useMemo(
+    () =>
+      item
+        ? {
+            name: item.name,
+            description: item.description,
+            repoUrl: item.repoUrl,
+            language: item.language ?? "",
+          }
+        : undefined,
+    [item],
+  )
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -65,7 +74,7 @@ export function OpenSourceFormDialog({ mode, item }: OpenSourceFormDialogProps) 
           defaultValues={defaultValues}
           onSubmit={handleSubmit}
           isPending={isPending}
-          onCancel={() => setOpen(false)}
+          onCancel={closeDialog}
         />
       </DialogContent>
     </Dialog>

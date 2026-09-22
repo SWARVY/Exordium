@@ -10,7 +10,7 @@ import {
   PopoverClose,
 } from "@shared/ui/components/popover"
 import { EllipsisIcon, XIcon } from "lucide-react"
-import { useLayoutEffect, useRef, useState } from "react"
+import { useLayoutEffect, useRef, useState, useCallback } from "react"
 
 import { PostTagLink } from "./post-tag-link"
 
@@ -25,6 +25,7 @@ export function PostTags({ tags }: PostTagsProps) {
   const measureRef = useRef<HTMLDivElement>(null)
   const [preview, setPreview] = useState({ count: 1, overflow: tags.length > 1 })
   const [open, setOpen] = useState(false)
+  const closePopover = useCallback(() => setOpen(false), [])
 
   useLayoutEffect(() => {
     const row = rowRef.current
@@ -118,7 +119,7 @@ export function PostTags({ tags }: PostTagsProps) {
               >
                 {tags.map((tag) => (
                   <li key={tag} className="min-w-0 max-w-full">
-                    <PostTagLink tag={tag} wrap onNavigate={() => setOpen(false)} />
+                    <PostTagLink tag={tag} wrap onNavigate={closePopover} />
                   </li>
                 ))}
               </ul>

@@ -6,7 +6,7 @@ import { useT } from "@shared/i18n"
 import { formatShortDate } from "@shared/lib/utils"
 import { Button } from "@shared/ui/components/button"
 import { AuthContext } from "@shared/ui/providers/auth-provider"
-import { useState, useContext } from "react"
+import { useCallback, useContext, useState } from "react"
 
 import { CommentReactions } from "./comment-reactions"
 import { ReplyItem } from "./reply-item"
@@ -27,6 +27,8 @@ export function CommentItem({ comment, replies, postId }: CommentItemProps) {
 
   const t = useT()
   const canDelete = userId === comment.authorId || isOwner
+  const toggleReply = useCallback(() => setIsReplying((value) => !value), [])
+  const closeReply = useCallback(() => setIsReplying(false), [])
 
   const timeLabel = formatShortDate(comment.createdAt)
 
@@ -58,7 +60,7 @@ export function CommentItem({ comment, replies, postId }: CommentItemProps) {
                 variant="ghost"
                 size="sm"
                 aria-expanded={isReplying}
-                onClick={() => setIsReplying((v) => !v)}
+                onClick={toggleReply}
                 className="min-w-11 text-muted-foreground"
               >
                 {isReplying ? t.action.cancel : t.action.reply}
@@ -93,7 +95,7 @@ export function CommentItem({ comment, replies, postId }: CommentItemProps) {
           <CommentForm
             postId={postId}
             parentId={comment.id}
-            onSuccess={() => setIsReplying(false)}
+            onSuccess={closeReply}
             placeholder={t.comment.replyPlaceholder}
             compact
           />

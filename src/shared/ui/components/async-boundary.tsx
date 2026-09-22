@@ -3,6 +3,8 @@ import { ErrorBoundary, Suspense } from "@suspensive/react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
 import { RefreshCcwIcon } from "lucide-react"
 
+import { Button } from "./button"
+
 import type { ErrorBoundaryFallbackProps } from "@suspensive/react"
 import type { ReactNode } from "react"
 
@@ -15,17 +17,17 @@ function QueryErrorFallback({ error, reset }: ErrorBoundaryFallbackProps) {
   const t = useT()
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
-      <p className="font-mono text-sm text-muted-foreground">
-        {error.message || t.asyncBoundary.errorMessage}
-      </p>
-      <button
-        type="button"
-        onClick={reset}
-        className="inline-flex min-h-11 items-center gap-2 rounded-sm border border-border px-4 py-2 font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary hover:text-primary-ink"
-      >
+      <p className="font-mono text-sm text-muted-foreground">{t.asyncBoundary.errorMessage}</p>
+      {import.meta.env.DEV && error.message && (
+        <details className="max-w-full text-left text-xs text-muted-foreground">
+          <summary className="cursor-pointer font-mono">Debug</summary>
+          <pre className="mt-2 whitespace-pre-wrap break-words">{error.message}</pre>
+        </details>
+      )}
+      <Button variant="outline" type="button" onClick={reset}>
         <RefreshCcwIcon className="size-3" />
         {t.action.retry}
-      </button>
+      </Button>
     </div>
   )
 }
@@ -46,15 +48,13 @@ export function AsyncBoundary({ children, fallback }: AsyncBoundaryProps) {
   )
 }
 
+const skeletonLines = [{ width: "70%" }, { width: "80%" }, { width: "90%" }]
+
 function DefaultSkeleton() {
   return (
     <div className="flex flex-col gap-3 py-8">
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div
-          key={i}
-          className="h-4 animate-pulse rounded bg-muted"
-          style={{ width: `${70 + (i % 3) * 10}%` }}
-        />
+      {skeletonLines.map((style) => (
+        <div key={style.width} className="h-4 animate-pulse rounded bg-muted" style={style} />
       ))}
     </div>
   )

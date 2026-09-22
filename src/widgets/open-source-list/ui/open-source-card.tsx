@@ -5,6 +5,7 @@ import { useIsOwner } from "@shared/hooks/use-is-owner"
 import { useT } from "@shared/i18n"
 import { ConfirmDialog } from "@shared/ui/components/confirm-dialog"
 import { ArrowDownIcon, ArrowUpIcon, ArrowUpRightIcon, GripVerticalIcon } from "lucide-react"
+import { useCallback, useMemo } from "react"
 
 import type { OpenSource } from "@entities/open-source"
 
@@ -17,6 +18,8 @@ interface OpenSourceCardProps {
   isFirst?: boolean
   isLast?: boolean
 }
+
+const OPEN_SOURCE_GHOST_STYLE = { minHeight: 160 }
 
 /** 순수 카드 UI (Overlay와 Sortable 양쪽에서 공유) */
 export function OpenSourceCardContent({
@@ -43,6 +46,10 @@ export function OpenSourceCardContent({
   const isOwner = useIsOwner()
   const t = useT()
   const { mutate: deleteItem, isPending } = useDeleteOpenSource()
+  const handleDelete = useCallback(() => deleteItem(item.id), [deleteItem, item.id])
+  const stopPropagation = useCallback((event: React.SyntheticEvent) => {
+    event.stopPropagation()
+  }, [])
 
   return (
     <article className="group flex h-full flex-col gap-4 rounded-sm border border-border bg-card p-6 transition-colors duration-200 hover:border-primary">
@@ -108,7 +115,7 @@ export function OpenSourceCardContent({
                 description={t.management.projectDeleteConfirm}
                 confirmLabel={t.action.delete}
                 variant="destructive"
-                onConfirm={() => deleteItem(item.id)}
+                onConfirm={handleDelete}
                 isPending={isPending}
               />
             </>
@@ -127,8 +134,8 @@ export function OpenSourceCardContent({
           rel="noopener noreferrer"
           aria-label={t.aria.repoLink(item.name)}
           className="flex min-h-11 items-center gap-1 font-mono text-sm font-medium text-muted-foreground transition-colors group-hover:text-primary-ink"
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => e.stopPropagation()}
+          onPointerDown={stopPropagation}
+          onClick={stopPropagation}
         >
           {t.action.viewRepo}
           <ArrowUpRightIcon className="size-3 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -153,10 +160,14 @@ export function OpenSourceCard({
     disabled: !isDndEnabled,
   })
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  }
+  const style = useMemo(
+    () => ({
+      transform: CSS.Transform.toString(transform),
+      transition,
+    }),
+    [transform, transition],
+  )
+  const dragHandleProps = useMemo(() => ({ ...attributes, ...listeners }), [attributes, listeners])
 
   return (
     <div ref={setNodeRef} style={style}>
@@ -164,7 +175,7 @@ export function OpenSourceCard({
         // 드래그 중인 자리는 ghost outline만 표시
         <div
           className="h-full rounded-sm border border-dashed border-border bg-muted/30"
-          style={{ minHeight: 160 }}
+          style={OPEN_SOURCE_GHOST_STYLE}
         />
       ) : (
         <OpenSourceCardContent
@@ -175,7 +186,7 @@ export function OpenSourceCard({
           onMoveDown={onMoveDown}
           isFirst={isFirst}
           isLast={isLast}
-          dragHandleProps={{ ...attributes, ...listeners }}
+          dragHandleProps={dragHandleProps}
         />
       )}
     </div>

@@ -5,9 +5,9 @@ import { fieldErrorMessage } from "@shared/lib/field-error"
 import { Button } from "@shared/ui/components/button"
 import { FieldError } from "@shared/ui/components/field-error"
 import { useForm } from "@tanstack/react-form"
-import { EmojiPicker } from "frimousse"
+import { EmojiPicker, type Emoji } from "frimousse"
 import { SmileIcon } from "lucide-react"
-import { useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 
 import { useCreateComment } from "../api/create-comment-mutation"
 
@@ -60,38 +60,45 @@ export function CommentForm({
     },
   })
 
-  function insertEmoji(native: string) {
-    const el = textareaRef.current
-    if (!el) return
-    const start = el.selectionStart ?? el.value.length
-    const end = el.selectionEnd ?? el.value.length
-    const current = form.getFieldValue("content")
-    const next = current.slice(0, start) + native + current.slice(end)
-    form.setFieldValue("content", next)
-    // 커서를 이모지 뒤로 이동
-    requestAnimationFrame(() => {
-      el.focus()
-      const pos = start + native.length
-      el.setSelectionRange(pos, pos)
-    })
-  }
+  const insertEmoji = useCallback(
+    (native: string) => {
+      const el = textareaRef.current
+      if (!el) return
+      const start = el.selectionStart ?? el.value.length
+      const end = el.selectionEnd ?? el.value.length
+      const current = form.getFieldValue("content")
+      const next = current.slice(0, start) + native + current.slice(end)
+      form.setFieldValue("content", next)
+      // 커서를 이모지 뒤로 이동
+      requestAnimationFrame(() => {
+        el.focus()
+        const pos = start + native.length
+        el.setSelectionRange(pos, pos)
+      })
+    },
+    [form],
+  )
+  const handleFormSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      void form.handleSubmit()
+    },
+    [form],
+  )
+  const handleEmojiSelect = useCallback((emoji: Emoji) => insertEmoji(emoji.emoji), [insertEmoji])
 
   return (
     <form.Field name="content">
       {(field) => (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            form.handleSubmit()
-          }}
-          className="flex flex-col gap-2"
-        >
+        <form onSubmit={handleFormSubmit} className="flex flex-col gap-2">
           {/* Textarea + toolbar */}
           <div className="rounded-xs border border-input bg-card transition-[border-color] focus-within:border-primary-ink">
             <textarea
               ref={textareaRef}
               id={inputId}
               value={field.state.value}
+              // Field render callbacks capture current field state; hooks cannot run inside this callback.
+              // oxlint-disable-next-line react-perf/jsx-no-new-function-as-prop
               onChange={(e) => {
                 if (createError) resetCreate()
                 field.handleChange(e.target.value)
@@ -125,7 +132,7 @@ export function CommentForm({
                     <Popover.Positioner side="top" align="start" sideOffset={8}>
                       <Popover.Popup className="z-50 overflow-hidden rounded-sm border border-border bg-card shadow-xl outline-none">
                         <EmojiPicker.Root
-                          onEmojiSelect={({ emoji }) => insertEmoji(emoji)}
+                          onEmojiSelect={handleEmojiSelect}
                           locale="ko"
                           columns={9}
                           className="flex w-72 flex-col"
@@ -176,6 +183,8 @@ export function CommentForm({
             </div>
           </div>
 
+          {/* Combine current field and mutation errors inside the Field render callback. */}
+          {/* oxlint-disable-next-line react-perf/jsx-no-new-array-as-prop */}
           <FieldError errors={[...field.state.meta.errors, createError]} id={errorId} />
         </form>
       )}

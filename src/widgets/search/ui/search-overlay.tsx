@@ -3,6 +3,7 @@ import { openSourceQueryOptions, type OpenSource } from "@entities/open-source"
 import { postQueryOptions, type PostSummary } from "@entities/post"
 import { routes } from "@shared/constants/routes"
 import { useT } from "@shared/i18n"
+import { Button } from "@shared/ui/components/button"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { ArrowUpRightIcon, FileTextIcon, FolderGitIcon, SearchIcon, XIcon } from "lucide-react"
@@ -21,13 +22,14 @@ export function SearchOverlay({ open, onClose, returnFocus }: SearchOverlayProps
     inputRef.current?.focus({ preventScroll: true })
     return false
   }, [])
+  const handleOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (!nextOpen) onClose()
+    },
+    [onClose],
+  )
   return (
-    <DialogPrimitive.Root
-      open={open}
-      onOpenChange={(nextOpen) => {
-        if (!nextOpen) onClose()
-      }}
-    >
+    <DialogPrimitive.Root open={open} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" />
         <DialogPrimitive.Popup
@@ -52,6 +54,10 @@ function SearchContent({
 }) {
   const t = useT()
   const [q, setQ] = useState("")
+  const changeQuery = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => setQ(event.target.value),
+    [],
+  )
   const [debouncedQuery, setDebouncedQuery] = useState("")
   const query = q.trim()
   useEffect(() => {
@@ -60,6 +66,10 @@ function SearchContent({
   }, [query])
   const postsQuery = useQuery(postQueryOptions.search(debouncedQuery))
   const projectsQuery = useQuery(openSourceQueryOptions.search(debouncedQuery))
+  const retrySearch = useCallback(() => {
+    void postsQuery.refetch()
+    void projectsQuery.refetch()
+  }, [postsQuery, projectsQuery])
   const posts = postsQuery.data ?? []
   const projects = projectsQuery.data ?? []
   const isLoading = query !== debouncedQuery || postsQuery.isFetching || projectsQuery.isFetching
@@ -75,7 +85,7 @@ function SearchContent({
           type="search"
           aria-label={t.search.label}
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={changeQuery}
           placeholder={t.search.placeholder}
           className="min-w-0 flex-1 bg-transparent py-3 text-[16px] text-foreground placeholder:text-muted-foreground outline-none focus-visible:outline-none sm:text-sm"
         />
@@ -95,16 +105,9 @@ function SearchContent({
           ) : hasError ? (
             <div role="alert" className="flex flex-col items-start gap-3">
               <p className="text-sm text-muted-foreground">{t.search.failed}</p>
-              <button
-                type="button"
-                onClick={() => {
-                  void postsQuery.refetch()
-                  void projectsQuery.refetch()
-                }}
-                className="min-h-[44px] rounded-sm border border-border px-4 text-sm text-foreground hover:border-primary"
-              >
+              <Button variant="outline" type="button" onClick={retrySearch}>
                 {t.action.retry}
-              </button>
+              </Button>
             </div>
           ) : !hasResults ? (
             <p role="status" className="break-words text-sm text-muted-foreground">
